@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Лотерея форума</title>
+<style>
+:root{--bg:#070b1a;--card:#111a33;--text:#eef1ff;--muted:#9aa6c8;--line:#2a3560;--gold:#ffd166;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:radial-gradient(circle at 50% 40%,#1b2a7a 0,var(--bg) 60%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow-x:hidden}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;padding:12px}
+.bar button,.bar select,.bar label.f{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:.95rem}
+.bar input[type=file]{display:none}
+.info{text-align:center;color:var(--muted);min-height:1.4em}
+.stage{position:relative;height:min(62vh,520px);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.drum{position:relative;width:min(80vw,380px);aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;padding:18%;background:radial-gradient(circle,#10183a 60%,#1a2660);border:6px solid transparent;background-clip:padding-box;box-shadow:0 0 0 6px var(--gold),0 0 60px rgba(255,209,102,.4)}
+.ring{position:absolute;inset:-6px;border-radius:50%;border:6px dashed var(--gold);opacity:.7}
+.spin .ring{animation:rot 1s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.nm{font-size:clamp(1.2rem,5vw,1.9rem);font-weight:800;word-break:break-word}
+.win .nm{color:var(--gold);font-size:clamp(1.5rem,6vw,2.4rem)}
+.chip{position:absolute;padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:.85rem;white-space:nowrap;left:50%;top:50%}
+.go{display:block;margin:6px auto;padding:16px 44px;font-size:1.3rem;font-weight:800;border:0;border-radius:999px;background:var(--gold);color:#3a2a00}
+.go:disabled{opacity:.5}
+.wl{max-width:520px;margin:14px auto;padding:0 16px;color:var(--muted)}
+.wl b{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="bar">
+  <select id="day"><option value="1">День 1</option><option value="2">День 2</option></select>
+  <label class="f">Загрузить CSV<input type="file" id="file" accept=".csv,.txt"></label>
+  <button id="demo">Демо-список</button>
+  <label class="f"><input type="checkbox" id="uniq" checked> без повторов</label>
+</div>
+<div class="info" id="info">Загрузите список участников (CSV из таблицы)</div>
+<div class="stage" id="stage"><div class="drum" id="drum"><div class="ring"></div><div class="nm" id="nm">🎁</div></div></div>
+<button class="go" id="go" disabled>Крутить барабан</button>
+<div class="wl" id="wl"></div>
+<script>
+// Адрес Google Apps Script для живой загрузки списка (пока не нужен: работает CSV).
+var ENDPOINT="";
+var $=function(i){return document.getElementById(i)};
+var all=[],pool=[],winners=[],busy=false;
+function pick(n){var a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n}
+function refresh(){
+  var d=$("day").value;
+  pool=all.filter(function(p){return !p.d||p.d===d}).filter(function(p){return !$("uniq").checked||!winners.some(function(w){return w.t===p.t&&w.d===p.d})});
+  $("info").textContent="Участников в розыгрыше: "+pool.length;
+  $("go").disabled=busy||!pool.length;
+}
+function parse(txt){
+  var L=txt.replace(/^\uFEFF/,"").split(/\r?\n/).filter(Boolean);if(!L.length)return[];
+  var sep=L[0].indexOf(";")>-1?";":(L[0].indexOf("\t")>-1?"\t":",");
+  var h=L[0].toLowerCase().split(sep),ix=function(k){for(var i=0;i<h.length;i++)if(h[i].indexOf(k)>-1)return i;return-1};
+  var a=ix("фам"),b=ix("имя"),t=ix("таб"),d=ix("дн");if(d<0)d=ix("day");
+  if(a<0)a=0;if(b<0)b=1;if(t<0)t=2;
+  return L.slice(1).map(function(r){var c=r.split(sep).map(function(x){return x.replace(/^"|"$/g,"").trim()});
+    var m=d>-1?(c[d]||"").match(/[12]/):null;return{n:(c[a]+" "+(c[b]||"")).trim(),t:c[t]||"",d:m?m[0]:""}}).filter(function(p){return p.n});
+}
+$("file").onchange=function(e){var f=e.target.files[0];if(!f)return;f.text().then(function(x){all=parse(x);winners=[];refresh()})};
+$("day").onchange=refresh;$("uniq").onchange=refresh;
+$("demo").onclick=function(){var s=["Ахметов Нурлан","Иванова Мария","Сейтқали Айдар","Петров Андрей","Қасымова Дана","Смирнов Олег","Жумабаев Ерлан","Ким Анна","Омаров Тимур","Белова Ольга","Нуртаев Руслан","Попова Елена"];
+  all=s.map(function(n,i){return{n:n,t:"T"+(1000+i),d:(i%3===0?"2":"1")}});all=all.concat(s.map(function(n,i){return{n:n,t:"T"+(1000+i),d:"2"}}).slice(0,0));winners=[];refresh()};
+function chips(names){
+  var st=$("stage"),w=st.clientWidth,h=st.clientHeight;
+  names.forEach(function(n,i){var c=document.createElement("div");c.className="chip";c.textContent=n;st.appendChild(c);
+    var x=(Math.random()-.5)*w*.95,y=(Math.random()-.5)*h*.95;
+    c.animate([{transform:"translate(-50%,-50%) translate("+x+"px,"+y+"px) scale(1)",opacity:1},{transform:"translate(-50%,-50%) scale(.1)",opacity:0}],{duration:1400,delay:i*45,easing:"ease-in",fill:"both"}).onfinish=function(){c.remove()}});
+}
+function confetti(){var st=$("stage");for(var i=0;i<40;i++){var c=document.createElement("div");c.textContent=["🎉","✨","🎊","⭐"][i%4];c.style.cssText="position:absolute;top:-20px;left:"+Math.random()*100+"%;font-size:1.6rem";st.appendChild(c);
+  c.animate([{transform:"translateY(0) rotate(0)"},{transform:"translateY("+(st.clientHeight+40)+"px) rotate(540deg)"}],{duration:2200+Math.random()*1500,delay:Math.random()*600}).onfinish=function(){this.effect.target.remove()}}}
+$("go").onclick=function(){
+  if(busy||!pool.length)return;busy=true;$("go").disabled=true;$("drum").classList.remove("win");
+  var w=pool[pick(pool.length)],sample=[];
+  for(var i=0;i<Math.min(30,pool.length);i++)sample.push(pool[pick(pool.length)].n);
+  chips(sample);$("nm").textContent="…";
+  setTimeout(function(){
+    $("drum").classList.add("spin");var t=0,dt=50,total=4500;
+    (function tick(){t+=dt;
+      if(t>=total){$("drum").classList.remove("spin");$("drum").classList.add("win");$("nm").textContent=w.n;confetti();
+        winners.push(w);$("wl").innerHTML="<b>Победители:</b><br>"+winners.map(function(x,i){return(i+1)+". "+x.n+(x.t?" (№ "+x.t+")":"")}).join("<br>");busy=false;refresh();return}
+      $("nm").textContent=pool[pick(pool.length)].n;dt=Math.min(450,dt*1.12);setTimeout(tick,dt)})();
+  },1800);
+};
+</script>
+</body>
+</html>
