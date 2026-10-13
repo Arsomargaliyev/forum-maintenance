@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Станция печати бейджей</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<style id="pg">@page{size:100mm 60mm;margin:0}</style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:#0d1226;color:#eef1ff;padding:16px}
+.c{max-width:640px;margin:0 auto}
+.card{background:#161d38;border:1px solid #2a3560;border-radius:14px;padding:16px;margin-bottom:14px}
+input,select,button{font-size:1rem;padding:10px;border-radius:8px;border:1px solid #2a3560;background:#0d1226;color:#eef1ff;margin:3px 0;width:100%}
+.r{display:flex;gap:8px}.r>*{flex:1}
+button{background:#3a6bff;border:0;font-weight:700}
+#st{font-size:1.3rem;font-weight:700}#log{color:#9aa6c8;font-size:.9rem;min-height:1.3em}
+#badge{display:none}
+@media print{body{background:#fff;padding:0}.c{display:none}
+ #badge{display:flex!important;flex-direction:column;align-items:center;justify-content:center;width:100mm;height:60mm;color:#000;background:#fff;text-align:center;font-family:Arial,sans-serif;overflow:hidden}
+ #badge .s{font-size:11mm;font-weight:800;line-height:1.05}#badge .n{font-size:7mm;margin:1mm 0}
+ #badge svg{width:80mm;height:16mm}#badge .m{font-size:3.5mm;margin-top:1mm}}
+</style>
+</head>
+<body>
+<div class="c">
+ <div class="card">
+  <b>Подключение</b>
+  <input id="u" placeholder="Адрес скрипта (/exec)" value="https://script.google.com/macros/s/AKfycbx8HKcYrcjYB5KFnx6l2xo8x2Sw0k0bih0OS0KHwsqAP2GSDby5XXbLdHaSjHrx62PW/exec"><input id="k" type="password" placeholder="Ключ">
+  <div class="r"><input id="w" type="number" value="100" title="Ширина, мм"><input id="h" type="number" value="60" title="Высота, мм"></div>
+  <div class="hint" style="color:#9aa6c8;font-size:.85rem">Ширина и высота этикетки, мм</div>
+  <button id="go">Старт</button>
+ </div>
+ <div class="card"><div id="st">Остановлено</div><div id="log"></div></div>
+ <div class="card">
+  <b>Выдача бейджей</b>
+  <label style="display:block;margin:6px 0"><input type="checkbox" id="auto" style="width:auto" checked> Автопечать: бейдж печатается сразу после регистрации</label>
+  <div id="wl"></div>
+ </div>
+ <div class="card">
+  <b>Ручная регистрация (без телефона)</b>
+  <div class="r"><input id="ms" placeholder="SURNAME"><input id="mn" placeholder="NAME"></div>
+  <div class="r"><input id="mt" placeholder="ID"><select id="md"><option>1</option><option>2</option></select></div>
+  <button id="add">Добавить и напечатать</button>
+ </div>
+</div>
+<div id="badge"><div class="s" id="bs"></div><div class="n" id="bn"></div><svg id="bc"></svg><div class="m" id="bm"></div></div>
+<script>
+var $=function(i){return document.getElementById(i)},q=[],wait=[],busy=false,printed=0,seen={},timer=null,U="",K="";
+["u","k","w","h"].forEach(function(i){try{var v=localStorage.getItem("b_"+i);if(v)$(i).value=v}catch(e){}});
+function log(t){$("log").textContent=t}
+function stat(){$("st").textContent="Ждут выдачи: "+wait.length+" · В печати: "+q.length+" · Напечатано: "+printed}
+function render(){var el=$("wl");el.textContent="";wait.forEach(function(r){var d=document.createElement("div");d.className="r";var s=document.createElement("span");s.textContent=r.surname+" "+r.name+" · "+r.tab+" · день "+r.day;var bt=document.createElement("button");bt.textContent="Выдать бейдж";bt.onclick=function(){q.push(wait.splice(wait.indexOf(r),1)[0]);render();stat();next()};d.appendChild(s);d.appendChild(bt);el.appendChild(d)})}
+function flush(){if($("auto").checked){q=q.concat(wait);wait=[]}render();stat();next()}
+function api(a,x){return fetch(U+"?action="+a+"&key="+encodeURIComponent(K)+(x||""))}
+function poll(){api("pending").then(function(r){return r.json()}).then(function(rows){
+  rows.forEach(function(r){if(!seen[r.row]){seen[r.row]=1;wait.push(r)}});flush()})
+  .catch(function(){log("Нет связи с таблицей, повтор…")})}
+function next(){
+  if(busy||!q.length)return;busy=true;var r=q.shift();
+  $("bs").textContent=r.surname;$("bn").textContent=r.name;$("bm").textContent="ID "+r.tab+" · Day "+r.day+" · FORUM NOVEMBER 2026";
+  try{JsBarcode("#bc",String(r.tab),{format:"CODE128",displayValue:false,height:60,margin:0})}catch(e){}
+  setTimeout(function(){window.print();
+    setTimeout(function(){api("done","&row="+r.row).then(function(){printed++}).catch(function(){log("Не удалось отметить печать, строка "+r.row)}).then(function(){busy=false;stat();next()})},1500)},300);
+}
+$("go").onclick=function(){
+  U=$("u").value.trim();K=$("k").value.trim();if(!U||!K){log("Введите адрес и ключ");return}
+  try{["u","k","w","h"].forEach(function(i){localStorage.setItem("b_"+i,$(i).value)})}catch(e){}
+  $("pg").textContent="@page{size:"+$("w").value+"mm "+$("h").value+"mm;margin:0}";
+  clearInterval(timer);poll();timer=setInterval(poll,3000);log("Работает, проверка каждые 3 с");
+};
+$("auto").onchange=flush;
+$("add").onclick=function(){
+  var s=$("ms").value.trim().toUpperCase(),n=$("mn").value.trim().toUpperCase(),t=$("mt").value.trim().toUpperCase();
+  if(!s||!n||!t||!U){log("Заполните поля и нажмите Старт");return}
+  fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify([{surname:s,name:n,tab:t,day:$("md").value}])})
+  .then(function(){["ms","mn","mt"].forEach(function(i){$(i).value=""});log("Добавлено, нажмите «Выдать бейдж» в списке");setTimeout(poll,1500)});
+};
+</script>
+</body>
+</html>
