@@ -32,7 +32,7 @@ button{background:#3a6bff;border:0;font-weight:700}
   <input id="u" placeholder="Адрес скрипта (/exec)" value="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec"><input id="k" type="password" placeholder="Ключ">
   <div class="r"><input id="w" type="number" value="75"><span class="sm">ширина бумаги, мм</span><input id="h" type="number" value="115"><span class="sm">длина бумаги, мм</span></div>
   <div class="sm">Дата и время на бейдже</div>
-  <div class="r"><input id="d1" value="12 НОЯБРЯ 2026 · 10:00"><input id="d2" value="13 НОЯБРЯ 2026 · 10:00"></div>
+  <div class="r"><input id="e1" value="7 ДЕКАБРЯ 2026 · 10:00"><input id="e2" value="11 ДЕКАБРЯ 2026 · 10:00"></div>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="land" style="width:auto" checked> Бейдж альбомный (текст вдоль длинной стороны)</label>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="flip" style="width:auto"> Развернуть на 180° (если печатается вверх ногами)</label>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="bgc" style="width:auto" checked> Лёгкий фон на бейдже (самолёт)</label>
@@ -70,7 +70,7 @@ button{background:#3a6bff;border:0;font-weight:700}
 </div>
 <script>
 var $=function(i){return document.getElementById(i)},q=[],wait=[],busy=false,printed=0,seen={},timer=null,U="",K="";
-var KEEP=["u","k","d1","d2"];
+var KEEP=["u","k","e1","e2"];
 KEEP.forEach(function(i){try{var v=localStorage.getItem("c_"+i);if(v)$(i).value=v}catch(e){}});
 try{if(localStorage.getItem("c_bg")==="0")$("bgc").checked=false}catch(e){}
 function save(){try{KEEP.forEach(function(i){localStorage.setItem("c_"+i,$(i).value)});localStorage.setItem("c_bg",$("bgc").checked?"1":"0")}catch(e){}}
@@ -83,7 +83,7 @@ function size(){var pw=parseFloat($("w").value)||75,ph=parseFloat($("h").value)|
   $("badge").className=($("bgc").checked?"bg ":"")+(land?($("flip").checked?"rot2":"rot"):"")}
 function fit(id,mm){var el=$(id);el.style.fontSize=mm+"mm";while(el.scrollWidth>el.clientWidth&&mm>2){mm-=.3;el.style.fontSize=mm+"mm"}}
 function show(r){
-  size();var d=$(r.day==="2"?"d2":"d1").value,id="ID "+r.tab;
+  size();var d=$(r.day==="2"?"e2":"e1").value,id="ID "+r.tab;
   $("sN").textContent=$("mN").textContent=r.name;$("sS").textContent=$("mS").textContent=r.surname;
   $("sD").textContent=$("mD").textContent=d;$("sI").textContent=$("mI").textContent=id;
   fit("sN",6.5);fit("sS",4.2);fit("sD",3.5);fit("mT",4.1);fit("mN",11);fit("mS",5.2);fit("mD",5.8);
