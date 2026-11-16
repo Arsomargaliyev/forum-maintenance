@@ -94,10 +94,10 @@ button{font:inherit;cursor:pointer;touch-action:manipulation}
   <div id="qtop"><div id="ring"><svg viewBox="0 0 62 62"><circle class="bg" cx="31" cy="31" r="27"/><circle class="fg" id="arc" cx="31" cy="31" r="27"/></svg><div id="cdn"></div></div><div id="ac"></div></div>
   <div id="qt"></div><div id="ob"></div><div id="qa"></div></div>
  <div class="card" id="rs"><div id="rw"></div></div>
- <div class="hint" style="text-align:center;opacity:.55;margin-top:14px">r9</div>
+ <div class="hint" style="text-align:center;opacity:.55;margin-top:14px">r10</div>
 </div>
 <script>
-var VER="r9";
+var VER="r10";
 (function(){try{fetch(location.pathname+"?nc="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var VER="([^"]+)"/);if(m&&m[1]!==VER&&!sessionStorage.getItem("rl"+m[1])){sessionStorage.setItem("rl"+m[1],"1");location.replace(location.pathname+"?v="+m[1])}}).catch(function(){})}catch(e){}})();
 var U="https://forum-quiz.ars-30-07-1994.workers.dev",$=function(i){return document.getElementById(i)};
 var me=null,off=0,G=null,QS=null,LG=null,SH=["▲","◆","●","■"],DEV="";
@@ -170,14 +170,14 @@ function tick(ts){
   if(k===cur&&phase==="q"){
     // у каждого телефона ровно G.T от момента, когда вопрос появился именно на его экране
     var left=G.T-(performance.now()-shownAt);
-    if(left<=0||ph>=G.T+1200){endQ(k);return}
+    if(left<=0||ph>=G.T+2000){endQ(k);return}
     $("arc").style.strokeDashoffset=170*(1-left/G.T);$("cdn").textContent=Math.ceil(left/1000);
     $("ring").className=left<2000?"hot":"";
   }
 }
 
 function showQ(k){
-  var q=QS[k],kk=LG==="kk";phase="q";chosen=-1;myT=0;PR=null;pgk=k;prog(k);
+  var q=QS[k],kk=LG==="kk";phase="q";chosen=-1;myT=0;PR=null;
   head(k);$("qt").textContent=kk?q.kq:q.q;$("qa").textContent="";$("qa").className="";$("ac").textContent="";
   var ob=$("ob");ob.className="";ob.innerHTML="";
   (kk?q.ko:q.o).forEach(function(t,i){var b=document.createElement("button");b.className="c"+i;b.innerHTML="<b>"+SH[i]+"</b>"+esc(t);
@@ -212,12 +212,12 @@ function endQ(k){
   phase="r";var s=S();
   if(chosen<0)$("ob").classList.add("done");
   $("rw").innerHTML="<div class='spin'></div><div style='font-weight:800;font-size:1.2rem'><span class='dots'>"+esc(s.calc)+"</span></div><div class='hint' id='wc'></div>";
-  restart("rs");show("rs");paint();
+  restart("rs");show("rs");
   setTimeout(function again(){
     if(cur!==k)return;
     api("qres","&q="+k+"&p="+me.p).then(function(r){
       if(r.wait){setTimeout(again,450+Math.random()*300);return}
-      pgk=-1;if(cur===k)result(k,r)}).catch(function(){setTimeout(again,1200)})},1600+Math.random()*700);
+      if(cur===k)result(k,r)}).catch(function(){setTimeout(again,1200)})},2700+Math.random()*700);
 }
 function result(k,r){
   var s=S(),m=r.my,last=k===QS.length-1,kk=LG==="kk",q=QS[k],ok=m.pts>0,to=chosen<0;
@@ -227,7 +227,7 @@ function result(k,r){
   var right=r.c!=null?"<div id='rc'>"+esc(s.right)+": <b>"+SH[r.c]+" "+esc((kk?q.ko:q.o)[r.c])+"</b>"+(chosen>=0?"<br>"+esc(s.time((myT/1000).toFixed(3))):"")+"</div>":"";
   $("rw").innerHTML="<div id='ic' class='"+cls+"'>"+icon+"</div><div id='rt'>"+esc(title)+"</div>"+
     "<div id='rp'>"+(ok?"+0":"0")+"</div>"+
-    "<div id='rr'>"+(last?esc(s.fin(m.rk,m.of)):esc(s.place(m.rk,m.of))+mv+"<br>"+esc(s.tot(m.s)))+"</div>"+right+
+    "<div id='rr'>"+(last?esc(s.fin(m.rk,m.of)):esc(s.place(m.rk,m.of))+mv+"<br>"+esc(s.tot(m.s)))+"</div>"+right+"<div class='hint'>"+esc(s.ans(m.a,m.of))+"</div>"+
     (last?"<div class='hint' style='font-size:1.05rem;color:#fff'>"+esc(s.thanks)+"</div>":"")+t5(r.top,s);
   restart("rs");show("rs");
   vib(ok?[30,60,30]:to?40:80);

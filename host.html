@@ -94,7 +94,7 @@ button{font:inherit;cursor:pointer}
 </head>
 <body>
 <div id="host">
- <div id="setup"><h2>Викторина форума · Форум викторинасы</h2><p>Откройте регистрацию. Игра начнётся по кнопке, когда все войдут.</p><button class="btn" id="open">Открыть игру</button><div class="hint" style="margin-top:8px">версия r9</div><div class="hint" id="err"></div></div>
+ <div id="setup"><h2>Викторина форума · Форум викторинасы</h2><p>Откройте регистрацию. Игра начнётся по кнопке, когда все войдут.</p><button class="btn" id="open">Открыть игру</button><div class="hint" style="margin-top:8px">версия r10</div><div class="hint" id="err"></div></div>
  <div id="main" style="display:none">
   <div id="top"><span id="qn"></span><span id="ans"></span><span id="cnt"></span></div>
   <div id="lobby"><h1>QR кодты сканерлеңіз · Сканируйте QR</h1>
@@ -161,7 +161,7 @@ function calc(k){
     $("ans").textContent="Жауап берді · Ответили: "+r.answered+" / "+r.of;
     reveal(r);
     setTimeout(function(){if(last!==k+"r")return;$("q1").textContent="Нәтижелер";$("q2").textContent="Результаты";anim($("q1"),"qin");anim($("q2"),"qin2");$("bar").style.display="none";
-      $("tiles").classList.add("small");$("host").classList.add("showlb");board(r.top)},1500);
+      $("tiles").classList.add("small");$("host").classList.add("showlb");board(r.top)},1300);
   }).catch(function(){setTimeout(function(){if(last===k+"r")calc(k)},400)});
 }
 // верный ответ и сколько выбрали каждый вариант
