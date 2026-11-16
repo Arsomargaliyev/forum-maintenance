@@ -38,14 +38,13 @@ input[type=text]:focus{outline:2px solid var(--accent);border-color:transparent}
 <div class="card" id="reg">
   <div id="formBox">
     <h2>Регистрация</h2>
-    <p class="hint">Please use Latin letters (English). / Пишите латинскими буквами.</p>
+    <p class="hint">Please use Latin letters (English), as in your company ID. / Пишите латинскими буквами, как в пропуске.</p>
     <label for="sn">Surname / Фамилия</label><input type="text" id="sn" autocomplete="family-name" autocapitalize="characters" placeholder="IVANOV">
     <label for="nm">Name / Имя</label><input type="text" id="nm" autocomplete="given-name" autocapitalize="characters" placeholder="ALEX">
-    <label for="tb">Employee ID / Табельный номер</label><input type="text" id="tb" autocapitalize="characters" placeholder="12345 / A1234">
-    <label>Day / День участия</label>
-    <div class="days"><label><input type="checkbox" value="1" class="dy"> Day 1 / День 1</label><label><input type="checkbox" value="2" class="dy"> Day 2 / День 2</label></div>
+    <label for="tb">Employee ID / Табельный номер</label><input type="text" id="tb" inputmode="text" autocapitalize="characters" placeholder="12345">
     <div class="err" id="err" role="alert"></div>
     <button class="send" id="send">Register / Зарегистрироваться</button>
+    <div id="dupBox" style="display:none"><button class="send" id="rp3" style="background:#2a3560">Распечатать бейдж повторно / Reprint</button><div class="hint" id="rm3"></div></div>
   </div>
   <div class="ok" id="okBox">
     <div class="tick">✔</div><h2>Вы зарегистрированы!</h2>
@@ -57,34 +56,40 @@ input[type=text]:focus{outline:2px solid var(--accent);border-color:transparent}
 </div>
 <div class="card" style="margin-top:14px">
   <h2>Уже регистрировались? / Already registered?</h2>
-  <label for="rtb">Employee ID / Табельный номер</label><input type="text" id="rtb" autocapitalize="characters" placeholder="12345 / A1234">
+  <label for="rtb">Employee ID / Табельный номер</label><input type="text" id="rtb" autocapitalize="characters" placeholder="12345">
   <button class="send" id="rp" style="background:#2a3560">Распечатать бейдж повторно / Reprint badge</button>
   <div class="hint" id="rmsg" role="status"></div>
  </div>
 </main>
 <script>
-// Адрес Google Apps Script. Пока пусто: форма работает в демо-режиме.
 var ENDPOINT="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec";
 var $=function(i){return document.getElementById(i)};
+var ERR={
+  bad:"Проверьте данные / Please check your details",
+  notfound:"Табельный номер не найден в списке сотрудников. Проверьте номер или подойдите к стойке регистрации. / Employee ID not found, please check it or go to the registration desk",
+  mismatch:"Фамилия или имя не совпадают с табельным номером. Проверьте написание или подойдите к стойке. / Name does not match the Employee ID",
+  dup:"Вы уже зарегистрированы сегодня. Если бейдж не вышел, нажмите «Распечатать повторно». / You are already registered today"
+};
+function sendBtn(on){var b=$("send");b.disabled=!on;b.textContent=on?"Register / Зарегистрироваться":"Проверяем… / Checking…"}
 $("send").onclick=function(){
-  var sn=$("sn").value.trim().toUpperCase(),nm=$("nm").value.trim().toUpperCase(),tb=$("tb").value.trim().toUpperCase();
-  var days=[].slice.call(document.querySelectorAll(".dy:checked")).map(function(c){return c.value});
-  var e=$("err");e.textContent="";
+  var sn=$("sn").value.trim().toUpperCase(),nm=$("nm").value.trim().toUpperCase(),tb=$("tb").value.replace(/\s+/g,"").toUpperCase();
+  var e=$("err");e.textContent="";$("dupBox").style.display="none";
   if(!/^[A-Z][A-Z '-]{1,29}$/.test(sn)||!/^[A-Z][A-Z '-]{1,29}$/.test(nm)){e.textContent="Name: Latin letters only / Только латинские буквы";return}
   if(!/^[0-9A-Z-]{2,12}$/.test(tb)){e.textContent="ID: digits and Latin letters / Цифры и латинские буквы";return}
-  if(!days.length){e.textContent="Select a day / Выберите день";return}
-  var b=$("send");b.disabled=true;b.textContent="Отправляем…";
-  function done(){window.LT=tb;$("bN").textContent=sn+" "+nm;$("bT").textContent="№ "+tb+" · "+days.map(function(d){return"день "+d}).join(", ");$("formBox").style.display="none";$("okBox").style.display="block"}
-  if(!ENDPOINT){setTimeout(done,500);return}
-  var ts=new Date().toISOString();
-  var body=JSON.stringify(days.map(function(d){return{surname:sn,name:nm,tab:tb,day:d,ts:ts}}));
-  function fail(){e.textContent="Не удалось сохранить, попробуйте ещё раз или подойдите к стойке / Could not save, please try again";b.disabled=false;b.textContent="Register / Зарегистрироваться"}
+  sendBtn(false);
+  function done(r){window.LT=r.tab||tb;$("bN").textContent=(r.surname||sn)+" "+(r.name||nm);$("bT").textContent="№ "+(r.tab||tb)+(r.day?" · день "+r.day:"");$("formBox").style.display="none";$("okBox").style.display="block"}
+  function fail(t){e.textContent=t||"Не удалось сохранить, попробуйте ещё раз или подойдите к стойке / Could not save, please try again";sendBtn(true)}
+  var body=JSON.stringify([{surname:sn,name:nm,tab:tb}]);
   fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain"},body:body})
-  .then(function(r){return r.text()}).then(function(x){if(x.trim()==="ok")done();else fail()})
-  .catch(function(){fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:body}).then(done).catch(fail)});
+  .then(function(r){return r.text()}).then(function(x){
+    var r;try{r=JSON.parse(x)}catch(_){if(x.trim()==="ok")return done({});return fail()}
+    if(r.ok)return done(r);
+    if(r.err==="dup"){window.LT=r.tab||tb;$("dupBox").style.display="block"}
+    fail(ERR[r.err])})
+  .catch(function(){fail("Нет связи, попробуйте ещё раз / No connection, please try again")});
 };
 function reprint(tab,el){
-  tab=String(tab||"").trim().toUpperCase();if(!tab){el.textContent="Введите номер / Enter ID";return}
+  tab=String(tab||"").replace(/\s+/g,"").toUpperCase();if(!tab){el.textContent="Введите номер / Enter ID";return}
   el.textContent="…";
   fetch(ENDPOINT+"?action=reprint&tab="+encodeURIComponent(tab)).then(function(r){return r.text()}).then(function(x){x=x.trim();
     el.textContent=x==="ok"?"Отправлено на печать, подойдите к принтеру / Sent to printer":
@@ -93,6 +98,7 @@ function reprint(tab,el){
   .catch(function(){el.textContent="Нет связи / No connection"})}
 $("rp").onclick=function(){reprint($("rtb").value,$("rmsg"))};
 $("rp2").onclick=function(){reprint(window.LT,$("rm2"))};
+$("rp3").onclick=function(){reprint(window.LT,$("rm3"))};
 </script>
 </body>
 </html>

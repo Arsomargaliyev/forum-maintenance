@@ -114,7 +114,7 @@ $("auto").onchange=flush;
 $("add").onclick=function(){
   var s=$("ms").value.trim().toUpperCase(),n=$("mn").value.trim().toUpperCase(),t=$("mt").value.trim().toUpperCase();
   if(!s||!n||!t){log("Заполните фамилию, имя и ID");return}if(!timer)start();if(!U)return;
-  fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify([{surname:s,name:n,tab:t,day:$("md").value}])})
+  fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({key:K,rows:[{surname:s,name:n,tab:t,day:$("md").value}]})})
   .then(function(){["ms","mn","mt"].forEach(function(i){$(i).value=""});log("Добавлено, печать через пару секунд");setTimeout(poll,1500)});
 };
 </script>

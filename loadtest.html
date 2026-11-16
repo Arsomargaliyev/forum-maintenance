@@ -1,63 +1,150 @@
 <!DOCTYPE html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Нагрузочный тест викторины</title>
 <style>
-body{margin:0;background:#0d1226;color:#eef1ff;font-family:system-ui,Segoe UI,Arial,sans-serif;padding:16px}
-.c{max-width:720px;margin:0 auto;background:#161d38;border:1px solid #2a3560;border-radius:14px;padding:16px}
-input,button{font-size:1rem;padding:10px;border-radius:8px;border:1px solid #2a3560;background:#0d1226;color:#eef1ff;width:100%;margin:4px 0}
-button{background:#ffc83d;color:#3a2a00;font-weight:800;border:0;cursor:pointer}
-.sm{color:#9aa6c8;font-size:.9rem}table{width:100%;border-collapse:collapse;margin-top:10px}td,th{padding:6px;border-bottom:1px solid #2a3560;text-align:left}
-.bad{color:#ff8c8c}.ok{color:#7be08a}
+body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:#0d1226;color:#eef1ff;padding:16px}
+.c{max-width:900px;margin:0 auto}
+input,button{font-size:1rem;padding:10px;border-radius:8px;border:1px solid #2a3560;background:#161d38;color:#eef1ff;margin:3px 0}
+input{width:100%}
+button{background:#ffc83d;color:#3a2a00;font-weight:800;border:0;cursor:pointer;padding:12px 24px}
+button:disabled{opacity:.5}
+.r{display:flex;gap:10px;flex-wrap:wrap}.r label{flex:1;min-width:180px}
+.sm{color:#9aa6c8;font-size:.9rem;line-height:1.45}
+table{width:100%;border-collapse:collapse;margin-top:10px}td,th{padding:6px;border-bottom:1px solid #2a3560;text-align:left}
+.bad{color:#ff8c8c}.ok{color:#7be08a}.warn{color:#ffc83d}
+.k{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
+.k div{background:#161d38;border-radius:10px;padding:10px}.k b{display:block;font-size:1.6rem}
+#vd{font-weight:800;margin-top:12px;font-size:1.1rem}
 </style></head><body><div class="c">
-<h2>Нагрузочный тест викторины</h2>
-<p class="sm">Имитирует игроков, которые входят, отвечают и запрашивают результаты. Сначала нажмите «Запустить ботов», потом на экране ведущего (host.html) откройте игру и нажмите «Начать сейчас». Запускайте с ноутбука с хорошим интернетом, без других вкладок.</p>
+<h2>Нагрузочный тест викторины · боты ведут себя как люди</h2>
+<p class="sm">
+1) На ноутбуке откройте <b>host.html</b> и нажмите «Открыть игру».<br>
+2) Здесь нажмите «Запустить ботов». Они будут входить постепенно, как люди, сканирующие QR.<br>
+3) Когда счётчик вошедших перестанет расти, нажмите на host.html «Начать игру».<br>
+4) Можно параллельно играть с живых телефонов через мобильный интернет.<br>
+<b class="warn">Эта вкладка должна быть на экране всё время теста</b> (свёрнутую вкладку браузер притормаживает, и боты начнут «опаздывать»). Лучше отдельное окно.
+</p>
 <input id="u" value="https://forum-quiz.ars-30-07-1994.workers.dev">
-<input id="n" type="number" value="200" min="1" max="400">
+<div class="r">
+ <label class="sm">Сколько ботов<input id="n" type="number" value="400" min="1" max="600"></label>
+ <label class="sm">За сколько секунд все войдут<input id="jw" type="number" value="90" min="5" max="600"></label>
+</div>
 <button id="go">Запустить ботов</button>
 <div id="st" class="sm" style="margin-top:8px"></div>
+<div class="k">
+ <div>Вошло<b id="kj">0</b></div>
+ <div>Ответов принято<b id="ka">0</b></div>
+ <div>Ответов отклонено<b id="kl">0</b></div>
+ <div>Результат после вопроса, сек (95%)<b id="kr">–</b></div>
+ <div>Запросов в секунду<b id="kq">0</b></div>
+</div>
 <table><thead><tr><th>Запрос</th><th>Всего</th><th>Ошибки</th><th>Среднее, мс</th><th>95%, мс</th><th>Макс, мс</th></tr></thead><tbody id="tb"></tbody></table>
-<p id="vd" style="font-weight:800;margin-top:12px"></p>
+<p id="vd"></p>
+<p class="sm" id="er"></p>
 </div>
 <script>
-var ERR="",$=function(i){return document.getElementById(i)},U,N,bots=[],G=null,QS=[],S={},off=0,run=false;
+var $=function(i){return document.getElementById(i)},U,N,S={},ERR="",run=false,bots=[],acc=0,late=0,resLag=[],reqLog=[];
+var FN=["AIDAR","ARMAN","ASEL","AIGERIM","DANIYAR","DINARA","ERLAN","GULNARA","IVAN","SERGEY","OLGA","MARAT","NURLAN","SAULE","TIMUR","ZHANNA","ALEXEY","AIZHAN","BAUYRZHAN","KAIRAT","MADINA","YERBOL","ANNA","DMITRIY","ASSEL","RUSLAN","KAMILA","AZAMAT","ELENA","BEKZAT"];
+var SN=["ABDIROV","AKHMETOV","BAIMUKHANOV","ZHANBYROV","IVANOV","KIM","NURGALIYEV","OMAROV","PETROV","SADYKOV","TOKAYEV","SMAGULOV","KASSYMOV","LI","ISMAILOV","YESSENOV","MUKHAMEDOV","SEITKALI","TSOY","KUANYSHEV","BEKOV","ORAZBAYEV","SULEIMENOV","ZHUMABAYEV","KOZLOV","ALIYEV","SERIKBAY","TULEGENOV","DOSSANOV","KARIMOV"];
+function rnd(a,b){return a+Math.random()*(b-a)}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+// Время ответа «как у человека»: чаще 1.5–3 с, бывают быстрые и тугодумы (логнормальное распределение).
+function humanTime(T,skill){var u=1-Math.random(),v=Math.random(),z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+  var t=Math.exp(Math.log(2300-skill*700)+.45*z);return Math.max(450,t)}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
 function stat(n){return S[n]||(S[n]={c:0,e:0,l:[]})}
-function api(n,x){var t=performance.now(),s=stat(n);s.c++;
-  return fetch(U+"?action="+n+(x||"")).then(function(r){return r.text()}).then(function(tx){var j;try{j=JSON.parse(tx)}catch(e){s.e++;s.l.push(performance.now()-t);if(!ERR)ERR="Скрипт ответил не JSON: "+tx.slice(0,120).replace(/\s+/g," ");return null}s.l.push(performance.now()-t);return j}).catch(function(e){s.e++;s.l.push(performance.now()-t);if(!ERR)ERR="Запрос не дошёл ("+(e&&e.message||e)+"). Проверьте адрес и доступ «Все»";return null})}
+function api(n,x){var t=performance.now(),s=stat(n);s.c++;reqLog.push(Date.now());
+  return fetch(U+"?action="+n+(x||""),{cache:"no-store"}).then(function(r){return r.text()}).then(function(tx){s.l.push(performance.now()-t);
+    try{return JSON.parse(tx)}catch(e){s.e++;if(!ERR)ERR=n+": сервер ответил не JSON: "+tx.slice(0,120).replace(/\s+/g," ");return null}})
+  .catch(function(e){s.e++;s.l.push(performance.now()-t);if(!ERR)ERR=n+": запрос не дошёл ("+(e&&e.message||e)+")";return null})}
 function pct(a,p){if(!a.length)return 0;a=a.slice().sort(function(x,y){return x-y});return a[Math.min(a.length-1,Math.floor(a.length*p))]}
-function render(){var h="",bad=0,tot=0;
+function render(){
+  var h="",bad=0,tot=0,now=Date.now();
   Object.keys(S).forEach(function(k){var s=S[k],avg=s.l.length?s.l.reduce(function(a,b){return a+b},0)/s.l.length:0;tot+=s.c;bad+=s.e;
-    h+="<tr><td>"+k+"</td><td>"+s.c+"</td><td class='"+(s.e?"bad":"ok")+"'>"+s.e+"</td><td>"+Math.round(avg)+"</td><td>"+Math.round(pct(s.l,.95))+"</td><td>"+Math.round(Math.max.apply(null,s.l.concat([0])))+"</td></tr>"});
+    var p95=pct(s.l,.95);
+    h+="<tr><td>"+k+"</td><td>"+s.c+"</td><td class='"+(s.e?"bad":"ok")+"'>"+s.e+"</td><td>"+Math.round(avg)+"</td><td class='"+(p95>3000?"bad":p95>1200?"warn":"ok")+"'>"+Math.round(p95)+"</td><td>"+Math.round(Math.max.apply(null,s.l.concat([0])))+"</td></tr>"});
   $("tb").innerHTML=h;
-  if(tot>0){var r=bad/tot;$("vd").textContent=r<.01?"Ошибок меньше 1%: нагрузка проходит":r<.05?"Ошибок "+(r*100).toFixed(1)+"%: терпимо, игроки повторят запрос":"Ошибок "+(r*100).toFixed(1)+"%: скрипт перегружен";$("vd").className=r<.05?"ok":"bad";if(ERR)$("vd").textContent+=" · Первая ошибка: "+ERR}}
-$("go").onclick=function(){
-  if(run)return;run=true;U=$("u").value.trim();N=Math.max(1,+$("n").value||200);
-  $("go").disabled=true;$("st").textContent="Бот-игроки входят…";var done=0;
-  for(var i=0;i<N;i++)(function(i){setTimeout(function(){
-    var nm="BOT"+String.fromCharCode(65+i%26)+String.fromCharCode(65+(i/26|0)%26),sr="TEST"+String.fromCharCode(65+(i*7)%26)+String.fromCharCode(65+(i/26|0)%26);
-    var tr=0;(function j(){api("qjoin","&name="+nm+"&sur="+sr).then(function(r){
-      if((!r||r.err==="busy")&&++tr<8){setTimeout(j,1000+Math.random()*2500);return}
-      if(r&&r.p)bots.push(r.p);done++;$("st").textContent="Вошло ботов: "+bots.length+" / "+N;render();if(done===N)watch()})})()},i*150)})(i);
+  $("kj").textContent=bots.filter(function(b){return b.p}).length+" / "+N;
+  $("ka").textContent=acc;$("kl").textContent=late;
+  $("kr").textContent=resLag.length?(pct(resLag,.95)/1000).toFixed(1):"–";
+  while(reqLog.length&&reqLog[0]<now-5000)reqLog.shift();
+  $("kq").textContent=Math.round(reqLog.length/5);
+  if(tot>0){var r=bad/tot,lr=acc+late?late/(acc+late):0,lag=resLag.length?pct(resLag,.95):0;
+    var good=r<.01&&lr<.02&&lag<6000;
+    $("vd").textContent=(good?"✅ Нагрузка проходит. ":r<.05&&lr<.05?"⚠️ Терпимо, но на пределе. ":"❌ Сервер не справляется. ")+
+      "Ошибок запросов: "+(r*100).toFixed(1)+"% · отклонённых ответов: "+(lr*100).toFixed(1)+"%";
+    $("vd").className=good?"ok":r<.05?"warn":"bad"}
+  $("er").textContent=ERR?"Первая ошибка: "+ERR:"";
+}
+
+// ---------- один бот = один человек с телефоном ----------
+function Bot(i){this.i=i;this.p=0;this.skill=Math.random();this.net=rnd(30,350);this.quitAt=Math.random()<.05?Math.floor(rnd(2,9)):99;this.lazy=Math.random()<.08}
+Bot.prototype.lag=function(){return sleep(this.net*rnd(.5,1.8))};  // мобильная сеть: у каждого своя задержка
+Bot.prototype.join=async function(name,sur){
+  for(var tr=0;tr<10;tr++){
+    await this.lag();
+    var r=await api("qjoin","&name="+name+"&sur="+sur);
+    if(r&&r.p){this.p=r.p;this.gid=r.gid;return true}
+    if(r&&r.err==="closed"){tr--;await sleep(5000)}               // ведущий ещё не открыл игру: ждём
+    else await sleep(rnd(1000,3500));
+  }return false};
+Bot.prototype.live=async function(){
+  // ждёт старта, как play.html: опрос раз в 6–9 секунд
+  var cfgDone=false;
+  while(run){
+    var s=await api("qstate");
+    if(s&&s.g){this.off=s.now-Date.now()+rnd(-80,80);this.G=s.g;
+      if(!cfgDone){var q=await api("qcfg");if(q&&q.length){this.QS=q;cfgDone=true}}
+      if(s.g.startAt&&cfgDone)break}
+    await sleep(s&&s.g&&s.g.startAt?1500:rnd(6000,9000));
+  }
+  var G=this.G,cyc=G.T+G.R;
+  for(var k=0;k<G.n;k++){
+    if(k>=this.quitAt)return;                         // ушёл из игры
+    var qAt=G.startAt+k*cyc,wait=qAt-(Date.now()+this.off);
+    if(wait>0)await sleep(wait+rnd(0,120));
+    $("st").textContent="Идёт игра: вопрос "+(k+1)+" / "+G.n;
+    this.question(k,qAt);
+    var resAt=qAt+G.T,w2=resAt-(Date.now()+this.off);
+    if(w2>0)await sleep(w2);
+    await this.result(k,resAt);
+  }
+  $("st").textContent="Тест завершён. Смотрите итог ниже.";};
+Bot.prototype.question=function(k,qAt){
+  var self=this,G=this.G,stop=false,shown=Date.now();
+  // счётчик «ответили X из Y»: раз в 1–1.5 с, пока идёт вопрос и подсчёт
+  (async function(){await sleep(rnd(0,300));while(!stop&&Date.now()+self.off<qAt+G.T+2500){await api("qprog","&q="+k);await sleep(rnd(1000,1500))}})();
+  setTimeout(function(){stop=true},G.T+2600);
+  if(this.lazy&&Math.random()<.5)return;              // задумался и не ответил
+  var t=humanTime(G.T,this.skill);
+  if(t>G.T-150)return;                                 // не успел
+  setTimeout(async function(){
+    var c=Math.random()<.4+self.skill*.5?0:Math.floor(Math.random()*4);   // чем «умнее», тем чаще один и тот же ответ
+    await self.lag();
+    var r=await api("qans","&p="+self.p+"&q="+k+"&c="+c+"&t="+Math.round(t));
+    if(r&&r.ok)acc++;else late++;
+  },t);};
+Bot.prototype.result=async function(k,resAt){
+  await sleep(rnd(2000,2600));
+  for(var n=0;n<30&&run;n++){
+    var r=await api("qres","&q="+k+"&p="+this.p);
+    if(r&&r.my){resLag.push(Date.now()+this.off-resAt);return}
+    await sleep(rnd(500,800));
+  }};
+
+$("go").onclick=async function(){
+  if(run)return;run=true;U=$("u").value.trim();N=Math.max(1,+$("n").value||400);var jw=Math.max(5,+$("jw").value||90)*1000;
+  $("go").disabled=true;$("st").textContent="Боты входят постепенно…";setInterval(render,1000);
+  var used={};
+  for(var i=0;i<N;i++){
+    var name,sur;do{name=pick(FN);sur=pick(SN)+(i>=FN.length*SN.length/3?"-"+String.fromCharCode(65+i%26)+String.fromCharCode(65+(i/26|0)%26):"")}while(used[name+sur]);used[name+sur]=1;
+    var b=new Bot(i);bots.push(b);
+    (function(b,name,sur){
+      // люди подходят неравномерно: больше в начале
+      var at=jw*Math.pow(Math.random(),1.6);
+      setTimeout(async function(){
+        if(await b.join(name,sur)){$("st").textContent="Боты входят… Когда число перестанет расти, нажмите на host.html «Начать игру»";b.live()}
+      },at)})(b,name,sur);
+  }
 };
-function watch(){
-  $("st").textContent="Боты в игре: "+bots.length+". Ждём старт: на host.html нажмите «Начать сейчас»…";
-  var iv=setInterval(function(){api("qstate").then(function(s){
-    if(!s||!s.g||!s.g.startAt)return;clearInterval(iv);off=s.now-Date.now();G=s.g;
-    api("qcfg").then(function(q){QS=q||[];play()})})},3000);
-}
-function play(){
-  var cyc=G.T+G.R;
-  for(var k=0;k<G.n;k++)(function(k){
-    var at=G.startAt+k*cyc-(Date.now()+off);
-    setTimeout(function(){
-      $("st").textContent="Вопрос "+(k+1)+" / "+G.n;
-      bots.forEach(function(p,j){
-        var t=800+Math.random()*(G.T-4000);
-        setTimeout(function(){api("qans","&p="+p+"&q="+k+"&c="+Math.floor(Math.random()*4)+"&t="+Math.round(t))},t);
-        setTimeout(function(){(function again(n){api("qres","&q="+k+"&p="+p).then(function(r){if(r&&r.wait&&n<6)setTimeout(function(){again(n+1)},1500+Math.random()*2000)})})(0)},G.T+4500+(p%25)*180+Math.random()*200);
-      });
-    },Math.max(0,at));
-  })(k);
-  setTimeout(function(){$("st").textContent="Тест завершён";render()},G.n*cyc+Math.max(0,G.startAt-(Date.now()+off))+4000);
-  setInterval(render,1000);
-}
 </script></body></html>
