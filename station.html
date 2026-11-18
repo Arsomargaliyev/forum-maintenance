@@ -39,10 +39,10 @@ button{background:#3a6bff;border:0;font-weight:700}
 <body>
 <div class="c">
  <div class="card">
-  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v11</span>
+  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v12</span>
   <input id="u" placeholder="Адрес скрипта (/exec)" value="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec"><input id="k" type="password" placeholder="Ключ">
   <div class="r"><input id="w" type="number" value="58"><span class="sm">ширина этикетки, мм</span><input id="h" type="number" value="40"><span class="sm">высота этикетки, мм</span></div>
-  <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="two" style="width:auto" checked> Две этикетки на человека: на бейдж и в лототрон (на второй сверху «ЛОТЕРЕЯ»)</label>
+  <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="two" style="width:auto" checked> Две одинаковые этикетки на человека: на бейдж и в лототрон</label>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="flip" style="width:auto"> Развернуть на 180° (если печатается вверх ногами)</label>
   <div class="sm">Если принтер подаёт этикетку узкой стороной вперёд, поменяйте местами ширину и высоту: текст повернётся сам.</div>
   <div class="r"><button id="go">Старт</button><button id="tst" style="background:#2a3560">Тестовая печать</button></div>
@@ -63,7 +63,7 @@ button{background:#3a6bff;border:0;font-weight:700}
 </div>
 <div id="prev"><div class="sm" style="margin-bottom:8px">Предпросмотр этикеток</div><div id="badge">
  <div class="pg" id="p1"><div class="lab"><div class="n" id="aN"></div><div class="s" id="aS"></div></div></div>
- <div class="pg" id="p2"><div class="lab lt"><div class="tg"><svg viewBox="0 0 24 16"><path fill="#fff" d="M1 1h22v4.5a2.5 2.5 0 0 0 0 5V15H1v-4.5a2.5 2.5 0 0 0 0-5z"/><path fill="#000" d="M12 3.4l1.2 2.5 2.7.3-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.3z"/></svg><span>ЛОТЕРЕЯ</span><svg viewBox="0 0 24 16"><path fill="#fff" d="M1 1h22v4.5a2.5 2.5 0 0 0 0 5V15H1v-4.5a2.5 2.5 0 0 0 0-5z"/><path fill="#000" d="M12 3.4l1.2 2.5 2.7.3-2 1.9.5 2.7-2.4-1.3-2.4 1.3.5-2.7-2-1.9 2.7-.3z"/></svg></div><div class="n" id="bN"></div><div class="s" id="bS"></div></div></div>
+ <div class="pg" id="p2"><div class="lab"><div class="n" id="bN"></div><div class="s" id="bS"></div></div></div></div>
 </div></div>
 <script>
 var $=function(i){return document.getElementById(i)},q=[],wait=[],busy=false,printed=0,seen={},timer=null,U="",K="";
@@ -94,9 +94,8 @@ function show(r){
   size();
   $("aN").textContent=$("bN").textContent=r.name;$("aS").textContent=$("bS").textContent=r.surname;
   var lh=Math.min(parseFloat($("w").value)||58,parseFloat($("h").value)||40),k=lh/40;   // крупнее/мельче вместе с размером этикетки
-  fitLab($("p1").firstChild,$("aN"),$("aS"),13*k,9.5*k);
-  document.documentElement.style.setProperty("--bh",(8*k)+"mm");
-  fitLab($("p2").firstChild,$("bN"),$("bS"),10.5*k,7.5*k);
+  fitLab($("p1").firstChild,$("aN"),$("aS"),11.5*k,8.5*k);
+  fitLab($("p2").firstChild,$("bN"),$("bS"),11.5*k,8.5*k);
 }
 function printNow(r,cb){show(r);setTimeout(function(){window.print();setTimeout(cb,1500)},400)}
 function render(){var el=$("wl");el.textContent="";wait.forEach(function(r){var d=document.createElement("div");d.className="r";var s=document.createElement("span");s.textContent=r.surname+" "+r.name+" · "+r.tab+" · день "+r.day;var bt=document.createElement("button");bt.textContent="Выдать бейдж";bt.onclick=function(){q.push(wait.splice(wait.indexOf(r),1)[0]);render();stat();next()};d.appendChild(s);d.appendChild(bt);el.appendChild(d)})}
