@@ -24,6 +24,8 @@ button{background:#3a6bff;border:0;font-weight:700}
 .pg.rot .lab{transform-origin:0 0;transform:translateX(var(--pw)) rotate(90deg)}
 .pg.rot.flip .lab{transform:translateY(var(--ph)) rotate(-90deg)}
 .pg.flip:not(.rot) .lab{transform:rotate(180deg)}
+/* сдвиг текста вниз (если принтер начинает печать раньше начала этикетки); на подгонку размера не влияет */
+.lab>*{position:relative;top:var(--dy,0mm)}
 .lab .n,.lab .s{width:100%;font-weight:800;line-height:1.02;letter-spacing:.01em;white-space:nowrap;overflow-wrap:anywhere}
 .lab .s{font-weight:700;margin-top:1.2mm}
 .lab .ln{width:62%;border-top:.35mm solid #000;margin:1.8mm 0 1.2mm}
@@ -39,10 +41,11 @@ button{background:#3a6bff;border:0;font-weight:700}
 <body>
 <div class="c">
  <div class="card">
-  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v14</span>
+  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v15</span>
   <input id="u" placeholder="Адрес скрипта (/exec)" value="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec"><input id="k" type="password" placeholder="Ключ">
   <div class="r"><input id="w" type="number" value="58"><span class="sm">ширина этикетки, мм</span><input id="h" type="number" value="40"><span class="sm">высота этикетки, мм</span></div>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="two" style="width:auto" checked> Две одинаковые этикетки на человека: на бейдж и в лототрон</label>
+  <div class="r"><input id="dy" type="number" step="0.5" value="8"><span class="sm" style="flex:3">сдвиг текста вниз, мм (если текст прижат к верху этикетки — больше, если к низу — меньше; 0 — без сдвига)</span></div>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="flip" style="width:auto"> Развернуть на 180° (если печатается вверх ногами)</label>
   <div class="sm">Если принтер подаёт этикетку узкой стороной вперёд, поменяйте местами ширину и высоту: текст повернётся сам.</div>
   <div class="r"><button id="go">Старт</button><button id="tst" style="background:#2a3560">Тестовая печать</button></div>
@@ -67,7 +70,7 @@ button{background:#3a6bff;border:0;font-weight:700}
 </div></div>
 <script>
 var $=function(i){return document.getElementById(i)},q=[],wait=[],busy=false,printed=0,seen={},timer=null,U="",K="";
-var KEEP=["u","k","w","h"];
+var KEEP=["u","k","w","h","dy"];
 KEEP.forEach(function(i){try{var v=localStorage.getItem("c_"+i);if(v)$(i).value=v}catch(e){}});
 // раньше по умолчанию было 60 мм: один раз переводим сохранённую ширину на 58
 try{if(!localStorage.getItem("c_v58")){if($("w").value==="60")$("w").value="58";if($("h").value==="60")$("h").value="58";localStorage.setItem("c_v58","1")}}catch(e){}
@@ -80,7 +83,7 @@ function api(a,x){return fetch(U+"?action="+a+"&key="+encodeURIComponent(K)+(x||
 // а к началу следующей этикетки принтер подгоняет ленту сам (по промежутку между этикетками).
 var SPARE=2;
 function size(){var pw=parseFloat($("w").value)||58,ph=(parseFloat($("h").value)||40)-SPARE,rot=ph>pw,st=document.documentElement.style;
-  $("pg").textContent="@page{size:"+pw+"mm "+ph+"mm;margin:0}";
+  $("pg").textContent="@page{size:"+pw+"mm "+ph+"mm;margin:0}";st.setProperty("--dy",(parseFloat($("dy").value)||0)+"mm");
   st.setProperty("--pw",pw+"mm");st.setProperty("--ph",ph+"mm");st.setProperty("--lw",(rot?ph:pw)+"mm");st.setProperty("--lh",(rot?pw:ph)+"mm");
   ["p1","p2"].forEach(function(id){$(id).className="pg"+(rot?" rot":"")+($("flip").checked?" flip":"")});
   $("p2").style.display=$("two").checked?"":"none"}
@@ -127,7 +130,7 @@ $("tst").onclick=function(){if(busy)return;save();busy=true;
   printNow({surname:"ABDRAKHMANOVA-KUZNETSOVA",name:"ALEXANDER",tab:"12345",day:"1"},function(){busy=false;next()})};
 $("auto").onchange=flush;
 var PV={surname:"KASSYMOVA",name:"AIGERIM",tab:"777",day:"1"};
-["w","h","two","flip"].forEach(function(i){$(i).addEventListener("input",function(){save();show(PV)})});
+["w","h","dy","two","flip"].forEach(function(i){$(i).addEventListener("input",function(){save();show(PV)})});
 show(PV);
 $("add").onclick=function(){
   var s=$("ms").value.trim().toUpperCase(),n=$("mn").value.trim().toUpperCase(),t=$("mt").value.replace(/\s+/g,"").toUpperCase();
