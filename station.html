@@ -39,7 +39,7 @@ button{background:#3a6bff;border:0;font-weight:700}
 <body>
 <div class="c">
  <div class="card">
-  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v13</span>
+  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v14</span>
   <input id="u" placeholder="Адрес скрипта (/exec)" value="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec"><input id="k" type="password" placeholder="Ключ">
   <div class="r"><input id="w" type="number" value="58"><span class="sm">ширина этикетки, мм</span><input id="h" type="number" value="40"><span class="sm">высота этикетки, мм</span></div>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="two" style="width:auto" checked> Две одинаковые этикетки на человека: на бейдж и в лототрон</label>
@@ -100,7 +100,7 @@ function show(r){
   fitLab($("p1").firstChild,$("aN"),$("aS"),11.5*k,8.5*k);
   fitLab($("p2").firstChild,$("bN"),$("bS"),11.5*k,8.5*k);
 }
-function printNow(r,cb){show(r);setTimeout(function(){window.print();setTimeout(cb,1500)},400)}
+function printNow(r,cb){show(r);setTimeout(function(){window.print();setTimeout(cb,700)},150)}
 function render(){var el=$("wl");el.textContent="";wait.forEach(function(r){var d=document.createElement("div");d.className="r";var s=document.createElement("span");s.textContent=r.surname+" "+r.name+" · "+r.tab+" · день "+r.day;var bt=document.createElement("button");bt.textContent="Выдать бейдж";bt.onclick=function(){q.push(wait.splice(wait.indexOf(r),1)[0]);render();stat();next()};d.appendChild(s);d.appendChild(bt);el.appendChild(d)})}
 function flush(){if($("auto").checked){q=q.concat(wait);wait=[]}render();stat();next()}
 function why(m){
@@ -108,16 +108,19 @@ function why(m){
   if(/<|Sign in|accounts\.google/i.test(m))return "Скрипт просит вход в Google. Откройте доступ «Все» и «Выполнять от имени: Я».";
   if(/Failed to fetch|NetworkError|Load failed/i.test(m))return "Запрос не дошёл: нет интернета, Google заблокирован на этом ноутбуке или адрес неверный. Попробуйте раздачу с телефона.";
   return m}
-function poll(){api("pending").then(function(r){return r.text()}).then(function(t){
+var polling=false;
+function poll(){if(polling)return;polling=true;api("pending").then(function(r){return r.text()}).then(function(t){
   var rows;try{rows=JSON.parse(t)}catch(e){throw new Error(t.slice(0,90).replace(/\s+/g," "))}
-  rows.forEach(function(r){var sk=r.row+"|"+r.tab+"|"+(r.rp||"");if(!seen[sk]){seen[sk]=1;wait.push(r)}});flush();log("Работает, проверка каждые 3 с")})
-  .catch(function(e){log("Нет связи: "+why(e.message||String(e)))})}
+  rows.forEach(function(r){var sk=r.row+"|"+r.tab+"|"+(r.rp||"");if(!seen[sk]){seen[sk]=1;wait.push(r)}});flush();log("Работает, проверка каждые 2 с")})
+  .catch(function(e){log("Нет связи: "+why(e.message||String(e)))}).then(function(){polling=false})}
 function next(){
   if(busy||!q.length)return;busy=true;var r=q.shift();
-  printNow(r,function(){api("done","&row="+r.row).then(function(){printed++}).catch(function(){log("Не удалось отметить печать, строка "+r.row)}).then(function(){busy=false;stat();next()})});
+  // отметку «напечатан» отправляем в таблицу фоном и сразу берём следующего человека
+  printNow(r,function(){printed++;busy=false;stat();next();
+    api("done","&row="+r.row).catch(function(){log("Не удалось отметить печать, строка "+r.row)})});
 }
 function start(){U=$("u").value.trim();K=$("k").value.trim();if(!U||!K){log("Введите адрес и ключ и нажмите «Старт»");return}
-  save();try{localStorage.setItem("c_auto","1")}catch(e){}size();clearInterval(timer);poll();timer=setInterval(poll,3000)}
+  save();try{localStorage.setItem("c_auto","1")}catch(e){}size();clearInterval(timer);poll();timer=setInterval(poll,2000)}
 $("go").onclick=start;
 try{var hm=location.hash.match(/k=([^&]+)/);if(hm)$("k").value=decodeURIComponent(hm[1]);if($("k").value&&(hm||localStorage.getItem("c_auto")==="1"))start()}catch(e){}
 $("tst").onclick=function(){if(busy)return;save();busy=true;
@@ -133,7 +136,7 @@ $("add").onclick=function(){
   $("add").disabled=true;
   fetch(U,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({key:K,rows:[{surname:s,name:n,tab:t,day:$("md").value}]})})
   .then(function(r){return r.text()}).then(function(x){var r;try{r=JSON.parse(x)}catch(e){r={err:x.slice(0,60)}}
-    if(r.ok){["ms","mn","mt"].forEach(function(i){$(i).value=""});log("Добавлено, печать через пару секунд");setTimeout(poll,1500);return}
+    if(r.ok){["ms","mn","mt"].forEach(function(i){$(i).value=""});log("Добавлено, печать через пару секунд");setTimeout(poll,800);return}
     if(r.err==="dup"){LT=r.tab||t;$("dupt").textContent="Уже зарегистрирован(а) сегодня: "+(r.surname||s)+" "+(r.name||n)+" · ID "+LT+". Новая строка в таблицу не добавлена.";$("dupm").style.display="block";return}
     log(r.err==="bad"?"Проверьте данные: только латинские буквы, ID — цифры и буквы":"Не сохранилось: "+r.err)})
   .catch(function(){log("Нет связи, попробуйте ещё раз")})
@@ -142,7 +145,7 @@ $("add").onclick=function(){
 var LT="";
 $("rpb").onclick=function(){if(!LT)return;$("rpb").disabled=true;
   fetch(U+"?action=reprint&tab="+encodeURIComponent(LT)).then(function(r){return r.text()}).then(function(x){x=x.trim();
-    if(x==="ok"){$("dupm").style.display="none";["ms","mn","mt"].forEach(function(i){$(i).value=""});log("Отправлено на повторную печать");setTimeout(poll,1500)}
+    if(x==="ok"){$("dupm").style.display="none";["ms","mn","mt"].forEach(function(i){$(i).value=""});log("Отправлено на повторную печать");setTimeout(poll,800)}
     else log(x==="wait"?"Повтор уже отправлен, подождите 30 секунд":x==="notfound"?"ID не найден":"Ошибка: "+x)})
   .catch(function(){log("Нет связи, попробуйте ещё раз")}).then(function(){$("rpb").disabled=false})};
 </script>
