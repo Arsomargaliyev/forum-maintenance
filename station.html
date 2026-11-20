@@ -36,13 +36,9 @@ button{background:#3a6bff;border:0;font-weight:700}
 .lab.lt{padding-top:calc(var(--bh) + 1.6mm)}
 .lab .tg{position:absolute;top:0;left:0;right:0;height:var(--bh);background:#000;color:#fff;display:flex;align-items:center;justify-content:center;gap:1.6mm;font-size:calc(var(--bh) * .52);font-weight:900;letter-spacing:.06em;line-height:1}
 .lab .tg svg{height:calc(var(--bh) * .62);width:auto;flex:none}
-/* чёрная этикетка: термопринтер не печатает в самый край, поэтому чёрная плашка с отступом 0,8 мм и скруглением —
-   так белая кромка выглядит задуманной рамкой. Плашка начинается с того же сдвига, что и текст. */
-.pg.inv .lab{background:transparent;color:#fff;padding-top:calc(2.2mm + var(--dy,0mm))}
-.pg.inv .lab>*{top:0}
-.pg.inv .lab::before{content:"";position:absolute;left:.8mm;right:.8mm;top:calc(.8mm + var(--dy,0mm));bottom:.8mm;border-radius:2mm;background:#000}
-.pg.inv .lab>*{z-index:1}
-.lab .no{position:absolute;right:1.6mm;bottom:1.2mm;font-size:2.2mm;font-weight:700;opacity:.8;top:auto!important}
+/* чёрная этикетка: чёрный на всю страницу этикетки, текст сдвигается так же, как у белой */
+.pg.inv{background:#000}
+.pg.inv .lab{background:#000;color:#fff}
 @media print{html,body{background:#fff!important;padding:0;margin:0}.c,#prev .sm{display:none!important}#prev{margin:0;max-width:none}
   #badge{display:block}.pg{box-shadow:none;border-radius:0;page-break-after:always;break-after:page}.pg:last-child{page-break-after:auto;break-after:auto}}
 </style>
@@ -50,7 +46,7 @@ button{background:#3a6bff;border:0;font-weight:700}
 <body>
 <div class="c">
  <div class="card">
-  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v16 (шрифт Inter Bold)</span>
+  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v17 (шрифт Inter Bold)</span>
   <input id="u" placeholder="Адрес скрипта (/exec)" value="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec"><input id="k" type="password" placeholder="Ключ">
   <div class="r"><input id="w" type="number" value="58"><span class="sm">ширина этикетки, мм</span><input id="h" type="number" value="40"><span class="sm">высота этикетки, мм</span></div>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="two" style="width:auto" checked> Две одинаковые этикетки на человека: на бейдж и в лототрон</label>
@@ -62,7 +58,7 @@ button{background:#3a6bff;border:0;font-weight:700}
  </div>
  <div class="card">
   <b>Тест принтера</b>
-  <div class="sm" style="margin:4px 0 8px">Печатает подряд столько этикеток, сколько укажете, с разными именами (короткими и очень длинными). В углу каждой — номер: сравните первую и последнюю — не побледнела ли печать.</div>
+  <div class="sm" style="margin:4px 0 8px">Печатает подряд столько этикеток, сколько укажете, с разными именами (короткими и очень длинными). Сравните первую и последнюю — не побледнела ли печать.</div>
   <div class="r"><input id="tn" type="number" min="1" max="500" value="20"><span class="sm">этикеток</span><button id="tst" style="background:#2a3560;flex:2">Напечатать тест</button></div>
  </div>
  <div class="card"><div id="st">Остановлено</div><div id="log"></div></div>
@@ -148,7 +144,7 @@ $("tst").onclick=function(){if(busy)return;var n=Math.max(1,Math.min(500,parseIn
   var box=$("badge"),tmp=[];$("p1").style.display="none";$("p2").style.display="none";size();
   for(var i=0;i<n;i++){var nm=TN[i%TN.length],pg=$("p1").cloneNode(true);pg.removeAttribute("id");pg.style.display="";
     var lab=pg.firstChild,a=lab.children[0],b=lab.children[1];a.removeAttribute("id");b.removeAttribute("id");a.textContent=nm[0];b.textContent=nm[1];
-    var no=document.createElement("div");no.className="no";no.textContent=(i+1)+"/"+n;lab.appendChild(no);box.appendChild(pg);tmp.push(pg)}
+    box.appendChild(pg);tmp.push(pg)}
   size();$("p1").style.display="none";$("p2").style.display="none";
   var k=Math.min(parseFloat($("w").value)||58,parseFloat($("h").value)||40)/40;
   tmp.forEach(function(pg){var lab=pg.firstChild;fitLab(lab,lab.children[0],lab.children[1],11.5*k,8.5*k)});
