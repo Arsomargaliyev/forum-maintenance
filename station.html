@@ -46,7 +46,7 @@ button{background:#3a6bff;border:0;font-weight:700}
 <body>
 <div class="c">
  <div class="card">
-  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v21 (шрифт Inter Bold)</span>
+  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v22 (шрифт Inter Bold)</span>
   <input id="u" placeholder="Адрес скрипта (/exec)" value="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec"><input id="k" type="password" placeholder="Ключ">
   <div class="r"><input id="w" type="number" value="58"><span class="sm">ширина этикетки, мм</span><input id="h" type="number" value="40"><span class="sm">высота этикетки, мм</span></div>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="two" style="width:auto" checked> Две одинаковые этикетки на человека: на бейдж и в лототрон</label>
@@ -92,10 +92,11 @@ function save(){try{KEEP.forEach(function(i){localStorage.setItem("c_"+i,$(i).va
 function log(t){$("log").textContent=t}
 function stat(){$("st").textContent="Ждут выдачи: "+wait.length+" · В печати: "+q.length+" · Напечатано: "+printed}
 function api(a,x){return fetch(U+"?action="+a+"&key="+encodeURIComponent(K)+(x||""))}
-// Страница на 2 мм короче этикетки по ходу ленты: так она никогда не заезжает на следующую,
-// а к началу следующей этикетки принтер подгоняет ленту сам (по промежутку между этикетками).
-var SPARE=2;
-function size(){var pw=parseFloat($("w").value)||58,ph=(parseFloat($("h").value)||40)-SPARE,rot=ph>pw,st=document.documentElement.style;
+// Белая этикетка: страница на 2 мм короче, чтобы никогда не заезжать на следующую.
+// Чёрная этикетка: страница ровно в размер этикетки, иначе по краям остаются белые полоски
+// (принтер настроен: Gap Offset 0, Tear Off — лента встаёт точно по промежутку).
+function spare(){return $("inv").checked?0:2}
+function size(){var pw=parseFloat($("w").value)||58,ph=(parseFloat($("h").value)||40)-spare(),rot=ph>pw,st=document.documentElement.style;
   $("pg").textContent="@page{size:"+pw+"mm "+ph+"mm;margin:0}";st.setProperty("--dy",DY+"mm");
   st.setProperty("--pw",pw+"mm");st.setProperty("--ph",ph+"mm");st.setProperty("--lw",(rot?ph:pw)+"mm");st.setProperty("--lh",(rot?pw:ph)+"mm");
   [].forEach.call(document.querySelectorAll("#badge .pg"),function(el){el.className="pg"+(rot?" rot":"")+($("flip").checked?" flip":"")+($("inv").checked?" inv":"")});
