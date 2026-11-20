@@ -46,14 +46,13 @@ button{background:#3a6bff;border:0;font-weight:700}
 <body>
 <div class="c">
  <div class="card">
-  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v18 (шрифт Inter Bold)</span>
+  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v19 (шрифт Inter Bold)</span>
   <input id="u" placeholder="Адрес скрипта (/exec)" value="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec"><input id="k" type="password" placeholder="Ключ">
   <div class="r"><input id="w" type="number" value="58"><span class="sm">ширина этикетки, мм</span><input id="h" type="number" value="40"><span class="sm">высота этикетки, мм</span></div>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="two" style="width:auto" checked> Две одинаковые этикетки на человека: на бейдж и в лототрон</label>
   <div class="r"><input id="dy" type="number" step="0.5" value="8"><span class="sm" style="flex:3">сдвиг текста вниз, мм (если текст прижат к верху этикетки — больше, если к низу — меньше; 0 — без сдвига)</span></div>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="flip" style="width:auto"> Развернуть на 180° (если печатается вверх ногами)</label>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="inv" style="width:auto"> Чёрная этикетка с белыми буквами (сначала проверьте тестом ниже)</label>
-  <div class="r" id="extRow"><input id="ext" type="number" step="1" min="0" max="20" value="8"><span class="sm" style="flex:3">удлинить чёрный фон вниз, мм (если внизу этикетки остаётся белая полоса — больше; если чёрный заезжает на следующую — меньше). Текст от этого не сдвигается.</span></div>
   <div class="sm">Если принтер подаёт этикетку узкой стороной вперёд, поменяйте местами ширину и высоту: текст повернётся сам.</div>
   <button id="go">Старт</button>
  </div>
@@ -82,7 +81,7 @@ button{background:#3a6bff;border:0;font-weight:700}
 </div></div>
 <script>
 var $=function(i){return document.getElementById(i)},q=[],wait=[],busy=false,printed=0,seen={},timer=null,U="",K="";
-var KEEP=["u","k","w","h","dy","ext"];
+var KEEP=["u","k","w","h","dy"];
 KEEP.forEach(function(i){try{var v=localStorage.getItem("c_"+i);if(v)$(i).value=v}catch(e){}});
 // раньше по умолчанию было 60 мм: один раз переводим сохранённую ширину на 58
 try{if(!localStorage.getItem("c_v58")){if($("w").value==="60")$("w").value="58";if($("h").value==="60")$("h").value="58";localStorage.setItem("c_v58","1")}}catch(e){}
@@ -95,10 +94,8 @@ function api(a,x){return fetch(U+"?action="+a+"&key="+encodeURIComponent(K)+(x||
 // а к началу следующей этикетки принтер подгоняет ленту сам (по промежутку между этикетками).
 var SPARE=2;
 function size(){var pw=parseFloat($("w").value)||58,ph=(parseFloat($("h").value)||40)-SPARE,rot=ph>pw,st=document.documentElement.style;
-  // чёрная этикетка: страница длиннее вниз на «удлинить фон», а блок с текстом остаётся прежнего размера и на том же месте
-  var ext=$("inv").checked&&!rot?Math.max(0,parseFloat($("ext").value)||0):0;$("extRow").style.display=$("inv").checked?"":"none";
-  $("pg").textContent="@page{size:"+pw+"mm "+(ph+ext)+"mm;margin:0}";st.setProperty("--dy",(parseFloat($("dy").value)||0)+"mm");
-  st.setProperty("--pw",pw+"mm");st.setProperty("--ph",(ph+ext)+"mm");st.setProperty("--lw",(rot?ph:pw)+"mm");st.setProperty("--lh",(rot?pw:ph)+"mm");
+  $("pg").textContent="@page{size:"+pw+"mm "+ph+"mm;margin:0}";st.setProperty("--dy",(parseFloat($("dy").value)||0)+"mm");
+  st.setProperty("--pw",pw+"mm");st.setProperty("--ph",ph+"mm");st.setProperty("--lw",(rot?ph:pw)+"mm");st.setProperty("--lh",(rot?pw:ph)+"mm");
   [].forEach.call(document.querySelectorAll("#badge .pg"),function(el){el.className="pg"+(rot?" rot":"")+($("flip").checked?" flip":"")+($("inv").checked?" inv":"")});
   $("p2").style.display=$("two").checked?"":"none"}
 // Подгонка: шрифт уменьшается, пока строка не влезет по ширине. Если и на минимуме не влезает
@@ -155,7 +152,7 @@ $("tst").onclick=function(){if(busy)return;var n=Math.max(1,Math.min(500,parseIn
   setTimeout(function(){window.print();setTimeout(function(){tmp.forEach(function(p){p.remove()});$("p1").style.display="";show(PV);busy=false;next()},700)},200)};
 $("auto").onchange=flush;
 var PV={surname:"KASSYMOVA",name:"AIGERIM",tab:"777",day:"1"};
-["w","h","dy","two","flip","inv","tn","ext"].forEach(function(i){$(i).addEventListener("input",function(){save();show(PV)})});
+["w","h","dy","two","flip","inv","tn"].forEach(function(i){$(i).addEventListener("input",function(){save();show(PV)})});
 show(PV);
 // шрифт встроен, но подгонку размера делаем ещё раз, когда он точно загрузился
 if(document.fonts&&document.fonts.load)document.fonts.load('700 10px "LabelInter"').then(function(){show(PV)});
