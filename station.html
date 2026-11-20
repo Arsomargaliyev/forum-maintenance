@@ -46,7 +46,7 @@ button{background:#3a6bff;border:0;font-weight:700}
 <body>
 <div class="c">
  <div class="card">
-  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v20 (шрифт Inter Bold)</span>
+  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v21 (шрифт Inter Bold)</span>
   <input id="u" placeholder="Адрес скрипта (/exec)" value="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec"><input id="k" type="password" placeholder="Ключ">
   <div class="r"><input id="w" type="number" value="58"><span class="sm">ширина этикетки, мм</span><input id="h" type="number" value="40"><span class="sm">высота этикетки, мм</span></div>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="two" style="width:auto" checked> Две одинаковые этикетки на человека: на бейдж и в лототрон</label>
@@ -81,9 +81,9 @@ button{background:#3a6bff;border:0;font-weight:700}
 <script>
 var $=function(i){return document.getElementById(i)},q=[],wait=[],busy=false,printed=0,seen={},timer=null,U="",K="";
 var KEEP=["u","k","w","h"];
-// Сдвиг текста под Xprinter с Gap offset 11 мм зашит: принтер начинает печать раньше начала этикетки,
-// с этим сдвигом текст выходит по центру наклейки. Отдельной настройки больше нет.
-var DY=8;
+// Принтер XP-365B настроен правильно (Gap Offset 0, Post-Print Action: Tear Off), поэтому сдвига нет:
+// печать совпадает с наклейкой, текст по центру. Если снова понадобится сдвиг — менять здесь (мм).
+var DY=0;
 KEEP.forEach(function(i){try{var v=localStorage.getItem("c_"+i);if(v)$(i).value=v}catch(e){}});
 // раньше по умолчанию было 60 мм: один раз переводим сохранённую ширину на 58
 try{if(!localStorage.getItem("c_v58")){if($("w").value==="60")$("w").value="58";if($("h").value==="60")$("h").value="58";localStorage.setItem("c_v58","1")}}catch(e){}
