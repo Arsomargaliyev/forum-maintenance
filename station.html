@@ -30,6 +30,10 @@ button{background:#3a6bff;border:0;font-weight:700}
 .lab>*{position:relative;top:var(--dy,0mm)}
 .lab .n,.lab .s{width:100%;font-weight:700;line-height:1.04;letter-spacing:.03em;white-space:nowrap;overflow-wrap:anywhere}
 .lab .s{font-weight:700;margin-top:1.2mm}
+/* код команды (город Air Astana) — мелко под фамилией, как элемент дизайна */
+.lab .tm{display:flex;align-items:center;justify-content:center;gap:.9mm;margin-top:2.2mm;font-size:3.3mm;font-weight:700;letter-spacing:.28em;line-height:1}
+.lab .tm svg{height:3mm;width:3mm;flex:none}
+.lab .tm:empty,.lab .tm.off{display:none}
 .lab .ln{width:62%;border-top:.35mm solid #000;margin:1.8mm 0 1.2mm}
 .lab .i{font-size:3.6mm;font-weight:800;letter-spacing:.04em}
 /* этикетка лотереи: сверху чёрная полоса с надписью и билетиком, ниже имя и фамилия как на первой */
@@ -75,8 +79,8 @@ button{background:#3a6bff;border:0;font-weight:700}
  </div>
 </div>
 <div id="prev"><div class="sm" style="margin-bottom:8px">Предпросмотр этикеток</div><div id="badge">
- <div class="pg" id="p1"><div class="lab"><div class="n" id="aN"></div><div class="s" id="aS"></div></div></div>
- <div class="pg" id="p2"><div class="lab"><div class="n" id="bN"></div><div class="s" id="bS"></div></div></div></div>
+ <div class="pg" id="p1"><div class="lab"><div class="n" id="aN"></div><div class="s" id="aS"></div><div class="tm" id="aT"></div></div></div>
+ <div class="pg" id="p2"><div class="lab"><div class="n" id="bN"></div><div class="s" id="bS"></div><div class="tm" id="bT"></div></div></div></div>
 </div></div>
 <script>
 var $=function(i){return document.getElementById(i)},q=[],wait=[],busy=false,printed=0,seen={},timer=null,U="",K="";
@@ -110,15 +114,19 @@ function fit(el,max,min){el.style.whiteSpace="nowrap";var mm=max;el.style.fontSi
 function fitLab(lab,nEl,sEl,nMax,sMax){var n=nMax,s=sMax;
   for(var k=0;k<40;k++){var a=fit(nEl,n,3.2),b=fit(sEl,Math.min(s,a),3);
     if(lab.scrollHeight<=lab.clientHeight+0.5)return;n=Math.max(3.2,n*.92);s=Math.max(3,s*.92)}}
+// код команды под фамилией: самолётик + IST (пусто — строки нет)
+var PLANE='<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" transform="rotate(90 12 12)"/></svg>';
+function setTeam(el,code){code=String(code||"").replace(/[^A-Z]/g,"").slice(0,4);el.innerHTML=code?PLANE+"<span>"+code+"</span>":""}
 function show(r){
   size();
   $("aN").textContent=$("bN").textContent=r.name;$("aS").textContent=$("bS").textContent=r.surname;
+  setTeam($("aT"),r.team);setTeam($("bT"),r.team);
   var lh=Math.min(parseFloat($("w").value)||58,parseFloat($("h").value)||40),k=lh/40;   // крупнее/мельче вместе с размером этикетки
   fitLab($("p1").firstChild,$("aN"),$("aS"),11.5*k,8.5*k);
   fitLab($("p2").firstChild,$("bN"),$("bS"),11.5*k,8.5*k);
 }
 function printNow(r,cb){show(r);setTimeout(function(){window.print();setTimeout(cb,700)},150)}
-function render(){var el=$("wl");el.textContent="";wait.forEach(function(r){var d=document.createElement("div");d.className="r";var s=document.createElement("span");s.textContent=r.surname+" "+r.name+" · "+r.tab+" · день "+r.day;var bt=document.createElement("button");bt.textContent="Выдать бейдж";bt.onclick=function(){q.push(wait.splice(wait.indexOf(r),1)[0]);render();stat();next()};d.appendChild(s);d.appendChild(bt);el.appendChild(d)})}
+function render(){var el=$("wl");el.textContent="";wait.forEach(function(r){var d=document.createElement("div");d.className="r";var s=document.createElement("span");s.textContent=r.surname+" "+r.name+" · "+r.tab+" · день "+r.day+(r.team?" · "+r.team:"");var bt=document.createElement("button");bt.textContent="Выдать бейдж";bt.onclick=function(){q.push(wait.splice(wait.indexOf(r),1)[0]);render();stat();next()};d.appendChild(s);d.appendChild(bt);el.appendChild(d)})}
 function flush(){if($("auto").checked){q=q.concat(wait);wait=[]}render();stat();next()}
 function why(m){
   if(/Forum registration/i.test(m))return "Скрипт ответил, но ключ не подошёл. Проверьте ключ в поле и в скрипте (KEY) и сделайте новую версию развёртывания.";
@@ -141,12 +149,13 @@ function start(){U=$("u").value.trim();K=$("k").value.trim();if(!U||!K){log("В�
 $("go").onclick=start;
 try{var hm=location.hash.match(/k=([^&]+)/);if(hm)$("k").value=decodeURIComponent(hm[1]);if($("k").value&&(hm||localStorage.getItem("c_auto")==="1"))start()}catch(e){}
 // Тест: N этикеток одним заданием печати, подряд — заодно проверка нагрева головки на длинной серии.
+var TC=["IST","DXB","FRA","PEK","ICN","CAN","BKK","LCA","HKT","AYT","TGD","BJV","TAS","TBS","SYX"];
 var TN=[["AIGERIM","KASSYMOVA"],["LI","KIM"],["ALEXANDER","ABDRAKHMANOVA-KUZNETSOVA"],["YERZHAN","TOKTARBEKOV"],["SERGEY","IVANOV"],
   ["MUKHAMEDZHAN","NURGALIYEVA"],["ASEL","OMAROVA"],["BAUYRZHAN","ZHUMABAYEV"],["DINARA","SEITKALI"],["TIMUR","AKHMETOV"]];
 $("tst").onclick=function(){if(busy)return;var n=Math.max(1,Math.min(500,parseInt($("tn").value,10)||1));save();busy=true;
   var box=$("badge"),tmp=[];$("p1").style.display="none";$("p2").style.display="none";size();
   for(var i=0;i<n;i++){var nm=TN[i%TN.length],pg=$("p1").cloneNode(true);pg.removeAttribute("id");pg.style.display="";
-    var lab=pg.firstChild,a=lab.children[0],b=lab.children[1];a.removeAttribute("id");b.removeAttribute("id");a.textContent=nm[0];b.textContent=nm[1];
+    var lab=pg.firstChild,a=lab.children[0],b=lab.children[1],c=lab.children[2];a.removeAttribute("id");b.removeAttribute("id");c.removeAttribute("id");a.textContent=nm[0];b.textContent=nm[1];setTeam(c,TC[i%TC.length]);
     box.appendChild(pg);tmp.push(pg)}
   size();$("p1").style.display="none";$("p2").style.display="none";
   var k=Math.min(parseFloat($("w").value)||58,parseFloat($("h").value)||40)/40;
@@ -154,7 +163,7 @@ $("tst").onclick=function(){if(busy)return;var n=Math.max(1,Math.min(500,parseIn
   log("Тест: "+n+" этикеток отправлено на печать");
   setTimeout(function(){window.print();setTimeout(function(){tmp.forEach(function(p){p.remove()});$("p1").style.display="";show(PV);busy=false;next()},700)},200)};
 $("auto").onchange=flush;
-var PV={surname:"KASSYMOVA",name:"AIGERIM",tab:"777",day:"1"};
+var PV={surname:"KASSYMOVA",name:"AIGERIM",tab:"777",day:"1",team:"IST"};
 ["w","h","two","flip","inv","tn"].forEach(function(i){$(i).addEventListener("input",function(){save();show(PV)})});
 show(PV);
 // шрифт встроен, но подгонку размера делаем ещё раз, когда он точно загрузился
