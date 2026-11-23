@@ -19,6 +19,11 @@ button,input{font-family:inherit}
 #tail{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(76vw,380px);aspect-ratio:907/834;object-fit:cover;z-index:-1;pointer-events:none;transition:opacity .6s;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 80%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 22%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 80%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 22%);mask-composite:intersect}
 body.quiet #tail{opacity:.3}
 .ti{display:block;width:92%;max-width:420px;margin:4svh auto 0}.li{height:1px;width:40%;background:var(--gold);opacity:.55;margin:3svh auto 0}
+.rg{display:block;width:min(62%,286px);margin:3svh auto 0}
+.bird{margin-top:4.5svh;width:96px;height:96px;border-radius:50%;border:1.5px solid var(--gold);background:radial-gradient(circle,rgba(210,170,118,.16),rgba(210,170,118,.03));display:flex;align-items:center;justify-content:center;cursor:pointer;animation:pulse 2.4s ease-in-out infinite;-webkit-tap-highlight-color:transparent}
+.bird img{height:54px;margin-left:-6px}.bird:active{transform:scale(.94)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(210,170,118,.45),0 0 24px rgba(210,170,118,.25)}50%{box-shadow:0 0 0 14px rgba(210,170,118,0),0 0 34px rgba(210,170,118,.45)}}
+.bl{margin-top:12px;color:var(--gold);font-size:.95rem;letter-spacing:.08em}
 /* фон: хвост самолёта, прижат к низу экрана */
 .scr{display:none;min-height:100svh;padding:calc(env(safe-area-inset-top,0px) + 28px) 18px calc(env(safe-area-inset-bottom,0px) + 28px);
   flex-direction:column;align-items:center;animation:in .35s ease}
@@ -66,7 +71,7 @@ input[type=text]:focus{outline:2px solid var(--gold);border-color:transparent}
   <div class="top">
     <div class="logo" role="img" aria-label="Air Astana"></div>
     <img class="ti" src="q/title.png" alt="NQZ Maintenance Forum 2026"><div class="li"></div>
-    <button class="go" id="start" aria-label="Регистрация"><img src="q/btn-registration.png" alt="REGISTRATION" style="display:block;height:17px;margin:0 auto"><span style="display:block;font:500 13px F,I,Arial,sans-serif;letter-spacing:.14em;margin-top:5px;opacity:.85">Регистрация</span></button>
+    <img class="rg" src="q/registration-title.png" alt="REGISTRATION"><button class="bird" id="start" aria-label="Регистрация"><img src="q/bird.png" alt=""></button><div class="bl">Тіркелу · Регистрация</div>
   </div>
 </section>
 
