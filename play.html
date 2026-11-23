@@ -114,19 +114,19 @@ button{font:inherit;cursor:pointer;touch-action:manipulation}
  
 </div>
 <script>
-var VER="r16";
+var VER="r17";
 (function(){try{fetch(location.pathname+"?nc="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var VER="([^"]+)"/);if(m&&m[1]!==VER&&!sessionStorage.getItem("rl"+m[1])){sessionStorage.setItem("rl"+m[1],"1");location.replace(location.pathname+"?v="+m[1])}}).catch(function(){})}catch(e){}})();
 var U="https://forum-quiz.ars-30-07-1994.workers.dev",$=function(i){return document.getElementById(i)};
 var me=null,off=0,G=null,QS=null,LG=null,SH=["▲","◆","●","■"],DEV="";
 var cur=-1,phase="",shownAt=0,chosen=-1,myT=0,prevRk=0,pgk=-1,PR=null,running=false,lastSec=-1;
 var L={
 ru:{ft:"QUIZ",fh:"Имя и фамилия латиницей",jn:"Войти в игру",closed:"Игра ещё не открыта. Подождите ведущего",bad:"Только латинские буквы",net:"Нет связи",busy:"Подождите, идёт вход…",
- inn:"Вы в игре",wait:"Ждите старта",start:"Старт через",q:"Вопрос",acc:"Ответ принят",calc:"Считаем результаты",ans:function(a,m){return"Ответили: "+a+" из "+m},top:"Топ-5",
+ inn:"Вы в игре",wait:"Ждите старта",start:"Старт через",ready:"Приготовьтесь!",q:"Вопрос",acc:"Ответ принят",calc:"Считаем результаты",ans:function(a,m){return"Ответили: "+a+" из "+m},top:"Топ-5",
  ok:"Верно!",no:"Неверно",to:"Время вышло",right:"Верный ответ",time:function(s){return"Ваше время: "+s+" с"},
  place:function(n,m){return n+"-е место из "+m},tot:function(s){return"Всего очков: "+s},fin:function(n,m){return"Вы заняли "+n+"-е место из "+m},thanks:"Спасибо за игру! Проходите в холл на кофе-брейк.",rejoin:"Игра обновлена, войдите снова",
  rules:"Правила: на каждый вопрос 5 секунд. Выбирайте ответ на телефоне. Чем быстрее верный ответ, тем больше очков (до 1000). Неверный ответ или отсутствие ответа: 0 очков. Побеждает набравший больше всех очков."},
 kk:{ft:"QUIZ",fh:"Аты-жөніңізді ағылшын әріптерімен жазыңыз",jn:"Ойынға кіру",closed:"Ойын әлі ашылмаған. Жүргізушіні күтіңіз",bad:"Тек латын әріптері",net:"Байланыс жоқ",busy:"Күте тұрыңыз, кіру жүріп жатыр…",
- inn:"Сіз ойындасыз",wait:"Бастауды күтіңіз",start:"Басталуына",q:"Сұрақ",acc:"Жауап қабылданды",calc:"Нәтижелер есептелуде",ans:function(a,m){return m+" ойыншының "+a+" жауап берді"},top:"Үздік 5",
+ inn:"Сіз ойындасыз",wait:"Бастауды күтіңіз",start:"Басталуына",ready:"Дайындалыңыз!",q:"Сұрақ",acc:"Жауап қабылданды",calc:"Нәтижелер есептелуде",ans:function(a,m){return m+" ойыншының "+a+" жауап берді"},top:"Үздік 5",
  ok:"Дұрыс!",no:"Қате",to:"Уақыт бітті",right:"Дұрыс жауап",time:function(s){return"Жауап уақыты: "+s+" с"},
  place:function(n,m){return m+" қатысушының ішінде "+n+"-орын"},tot:function(s){return"Барлығы: "+s+" ұпай"},fin:function(n,m){return"Сіз "+m+" қатысушының ішінде "+n+"-орын алдыңыз"},thanks:"Ойынға қатысқаныңыз үшін рахмет! Кофе-брейкке холлға өтіңіздер.",rejoin:"Ойын жаңартылды, қайта кіріңіз",
  rules:"Ережелер: әр сұраққа 5 секунд беріледі. Жауапты телефоннан таңдаңыз. Дұрыс жауап неғұрлым жылдам болса, ұпай соғұрлым көп (1000-ға дейін). Қате жауап немесе жауап болмаса: 0 ұпай. Ең көп ұпай жинаған адам жеңеді."}};
@@ -179,7 +179,7 @@ function tick(ts){
   if(t<0){
     var sec=Math.ceil(-t/1000);if(sec===lastSec)return;lastSec=sec;
     if(sec<=5){if(phase!=="cd")show("cd");phase="cd";$("cdt").textContent=s.start;$("big").textContent=sec;$("big").className="";void $("big").offsetWidth;$("big").className="pop";vib(20)}
-    else{if(phase!=="wt")show("wt");phase="wt";$("m").innerHTML=esc(s.start)+"<br><b style='font-size:2rem'>"+sec+"</b>"}
+    else{if(phase!=="wt")show("wt");phase="wt";$("m").innerHTML="<b style='font-size:1.6rem;color:var(--gold)'>"+esc(s.ready)+"</b>"}
     return}
   var k=Math.floor(t/cyc);if(k>=QS.length)return;
   var ph=t%cyc;

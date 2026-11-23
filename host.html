@@ -19,7 +19,7 @@ body{margin:0;color:var(--text);font-family:F,I,Arial,sans-serif;font-weight:500
 @media (max-aspect-ratio:16/10){#lobby .lgrid{font-size:.9em}}
 .lang{display:flex;align-items:center;gap:1.2vw;font-size:2vh;letter-spacing:.3em;color:var(--gold)}.lang i{height:2px;background:var(--gold);opacity:.45;flex:1}
 .lang:before{content:"";height:2px;background:var(--gold);opacity:.45;flex:1}
-#bar+.lang{margin-top:auto}#q1,#q2{text-align:center;padding:0 13vw}
+#bar+.lang{margin-top:auto}#q2{margin-bottom:auto!important}#q1,#q2{text-align:center;padding:0 13vw}
 .lobbyon .lang,.showlb .lang{display:none}
 #lobby .lgrid{display:grid;grid-template-columns:auto 1fr;gap:4vw;align-items:center;height:100%;text-align:left}
 #lobby .qrw{background:#fff;border-radius:2vh;padding:2.2vh}#lobby .qrc{margin-top:2.2vh;font-size:3.1vh;letter-spacing:.06em;text-align:center}
@@ -49,7 +49,7 @@ button{font:inherit;cursor:pointer}
 .tile .fill{position:absolute;left:0;bottom:0;height:6px;width:0;background:rgba(255,255,255,.85);transition:width 1s cubic-bezier(.2,.9,.3,1)}
 .tile .n{position:absolute;right:2vw;top:50%;transform:translateY(-50%);font-size:4.6vh;font-weight:500;opacity:0;transition:opacity .4s}
 .c0{background:#c8243d}.c1{background:#1d5fb8}.c2{background:#b88a00}.c3{background:#2a7a1c}
-#tiles .tile{display:none}#tiles.rev{grid-template-columns:1fr}#tiles.rev .tile.win{display:flex}
+#tiles{display:none!important}/* на большом экране только вопросы: ни вариантов, ни верного ответа */
 #tiles.rev .tile .n{opacity:1}
 #tiles.rev .tile:not(.win){opacity:.3;filter:grayscale(.7);transform:scale(.97)}
 #tiles.rev .tile.win{transform:scale(1.03);box-shadow:0 0 0 4px #fff,0 0 40px rgba(255,255,255,.45)}
@@ -154,12 +154,12 @@ $("open").onclick=function(){start(true)};
 addEventListener("keydown",function(e){if(e.key==="Enter"&&G&&!G.startAt&&$("host").classList.contains("lobbyon")){e.preventDefault();$("now").click()}});
 // при открытии страницы: игра уже открыта или идёт — подключаемся к ней; нет игры или закончилась — открываем новую
 if(K){$("err").textContent="Загрузка…";api("qstate").then(function(s){var g=s&&s.g,live=g&&g.gid&&(!g.startAt||s.now<g.startAt+g.n*(g.T+g.R)+120000);start(!live)}).catch(function(){$("err").textContent="Нет связи с сервером. Нажмите «Открыть игру»."})}
-$("now").onclick=function(){api("qstart","&delay=12").then(function(g){if(g)G=g})};
+$("now").onclick=function(){api("qstart","&delay=16").then(function(g){if(g)G=g})};
 function loop(){
   requestAnimationFrame(loop);
   if(!G)return;if(!G.startAt){$("cd").textContent="Барлығы кіргенде бастаймыз · Начнём, когда все войдут";return}
   var t=now()-G.startAt,cyc=G.T+G.R;
-  if(t<0){var sec=Math.ceil(-t/1000);$("cd").textContent="Басталуына · До старта: "+fmt(-t);
+  if(t<0){var sec=Math.ceil(-t/1000);$("cd").textContent="Дайындалыңыз! · Приготовьтесь!";
     if(sec<=5&&sec!==lastCd){lastCd=sec;$("bigcd").style.display="flex";$("bigcd").innerHTML="<span>"+sec+"</span>"}return}
   if(lastCd!==0){lastCd=0;$("bigcd").style.display="none"}
   var k=Math.floor(t/cyc);
@@ -216,7 +216,7 @@ function finish(){
   function go(n){api("qfinal").then(function(r){
     if(!r||!r.top||!r.top.length){if(n<20)setTimeout(function(){go(n+1)},1000);return}
     var w=r.top[0];$("host").classList.add("showlb");board(r.top);var row=rows[w.p];
-    setTimeout(function(){if(row){row.style.zIndex=20;row.lastChild.animate([{transform:"translate(0,0) scale(1)",filter:"drop-shadow(0 0 0 rgba(255,180,90,0))",offset:0},{transform:"translate(-20px,-6px) scale(2)",filter:"drop-shadow(0 0 10px rgba(255,180,90,.6))",offset:.22},{transform:"translate(-24px,-9px) scale(2.05) rotate(-1deg)",offset:.29},{transform:"translate(-18px,-4px) scale(2.1) rotate(1deg)",offset:.36},{transform:"translate(-25px,-8px) scale(2.15) rotate(-1deg)",offset:.43},{transform:"translate(-19px,-5px) scale(2.2) rotate(1deg)",filter:"drop-shadow(0 0 26px rgba(255,170,70,1))",offset:.5},{transform:"translate(160px,-70px) rotate(-10deg) scale(2.4)",offset:.7},{transform:"translate(1700px,-800px) rotate(-18deg) scale(3)",filter:"drop-shadow(0 0 30px rgba(255,170,70,1))",opacity:0,offset:1}],{duration:4200,easing:"ease-in",fill:"forwards"})}},1500);
+    setTimeout(function(){if(row){row.style.zIndex=20;row.lastChild.animate([{transform:"translate(0,0) scale(1)",filter:"drop-shadow(0 0 0 rgba(255,180,90,0))",offset:0},{transform:"translate(-20px,-6px) scale(2)",filter:"drop-shadow(0 0 10px rgba(255,180,90,.6))",offset:.22},{transform:"translate(-24px,-9px) scale(2.05) rotate(-1deg)",offset:.29},{transform:"translate(-18px,-4px) scale(2.1) rotate(1deg)",offset:.36},{transform:"translate(-25px,-8px) scale(2.15) rotate(-1deg)",offset:.43},{transform:"translate(-19px,-5px) scale(2.2) rotate(1deg)",filter:"drop-shadow(0 0 26px rgba(255,170,70,1))",offset:.5},{transform:"translate(160px,-70px) rotate(-10deg) scale(2.4)",offset:.7},{transform:"translate(2200px,-1100px) rotate(-18deg) scale(3)",filter:"drop-shadow(0 0 30px rgba(255,170,70,1))",opacity:1,offset:1}],{duration:4200,easing:"ease-in",fill:"forwards"})}},1500);
     setTimeout(function(){$("city").classList.add("on");$("host").classList.add("fin");flight()},5600);
     setTimeout(function(){$("wn").textContent=w.n;$("ws").textContent=w.s+" points";
       $("wp").innerHTML=[1,2].map(function(i){var x=r.top[i];return x?"<div><span class='pl"+(i+1)+"'>"+["","2ND PLACE","3RD PLACE"][i]+"</span>: "+esc(x.n)+" — "+x.s+"</div>":""}).join("");
