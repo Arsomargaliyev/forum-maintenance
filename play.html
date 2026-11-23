@@ -3,11 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Викторина форума</title>
+<title>NQZ Forum Quiz</title>
 <style>
 :root{--text:#eef1ff;--muted:#9fb0cf;--card:transparent;--gold:#D2AA76;--ok:#2fd27a;--bad:#ff5a6a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;min-height:100svh;color:var(--text);font-family:I,Arial,sans-serif;font-weight:700;background:#010c18}
+body{margin:0;min-height:100svh;color:var(--text);font-family:F,I,Arial,sans-serif;font-weight:500;background:#010c18}
+@font-face{font-family:F;src:url(q/futura-like.woff) format("woff");font-weight:500;font-display:swap;unicode-range:U+0000-03FF,U+2000-2BFF}
+@font-face{font-family:F;src:url(q/montserrat-cyr.woff) format("woff");font-weight:500;font-display:swap;unicode-range:U+0400-052F}
 @font-face{font-family:J;src:url(q/futura-like.woff) format("woff");font-weight:500;font-display:swap}
 @font-face{font-family:I;src:url(q/inter.woff) format("woff");font-weight:700;font-display:swap}
 #tail{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(88vw,440px);aspect-ratio:907/834;object-fit:cover;z-index:-1;pointer-events:none;transition:opacity .6s;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 80%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 22%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 80%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 22%);mask-composite:intersect}
@@ -20,7 +22,7 @@ body.quiet #brand{display:none}
 @keyframes cardIn{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
 h1{margin:0 0 8px;font-size:1.3rem;font-weight:700;line-height:1.35}
 input::placeholder{color:#6f84a8}
-input{width:100%;font-size:1.1rem;padding:14px;border-radius:12px;border:1.5px solid #253d63;background:#0a1830;color:#fff;font-family:I,Arial,sans-serif;font-weight:700;margin:6px 0;text-align:center;transition:border-color .2s}
+input{width:100%;font-size:1.1rem;padding:14px;border-radius:12px;border:1.5px solid #253d63;background:#0a1830;color:#fff;font-family:F,I,Arial,sans-serif;font-weight:500;margin:6px 0;text-align:center;transition:border-color .2s}
 input:focus{outline:none;border-color:var(--gold)}
 button{font:inherit;cursor:pointer;touch-action:manipulation}
 .go{width:100%;margin-top:10px;padding:18px;font-size:1.1rem;font-weight:700;border:0;border-radius:14px;background:var(--gold);color:#24180a;transition:transform .12s}
@@ -28,9 +30,10 @@ button{font:inherit;cursor:pointer;touch-action:manipulation}
 .go.o{background:transparent!important;border:1.5px solid var(--gold);color:var(--gold)}
 .er{color:#ff8c8c;min-height:1.3em;margin-top:8px}
 .hint{color:var(--muted);font-size:.92rem;line-height:1.45;margin-top:10px}
-#hd{display:none;margin-bottom:12px}#hq{font-weight:800;color:var(--muted);text-align:center;margin-bottom:6px;font-size:1.05rem}
+#hd{display:none;margin-bottom:12px}#hq{font-weight:500;color:var(--muted);text-align:center;margin-bottom:6px;font-size:1.05rem}
 #ln{position:relative;height:36px;border-radius:10px;background:#0a1830;border:1px solid #1b2f50;overflow:hidden}
-#ln:before{content:"";position:absolute;left:10px;right:10px;top:17px;border-top:2px dashed rgba(210,170,118,.45)}
+#ln i{position:absolute;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:rgba(210,170,118,.25);transition:background .6s,box-shadow .6s}
+#ln i.on{background:var(--gold);box-shadow:0 0 8px rgba(210,170,118,.8)}#pp{z-index:2}
 #pp{position:absolute;top:9px;left:10px;width:84px;height:auto;animation:bob 2.4s ease-in-out infinite;transition:left 1.4s cubic-bezier(.3,.9,.3,1);filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
 #fly{position:relative;height:90px;margin:4px 0 10px;overflow:hidden}
 #fly img{position:absolute;left:50%;top:30px;width:200px;margin-left:-100px;animation:hover 3.2s ease-in-out infinite;filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))}
@@ -41,7 +44,7 @@ button{font:inherit;cursor:pointer;touch-action:manipulation}
 #m{font-size:1.25rem;font-weight:700;line-height:1.5}
 .dots:after{content:"";animation:dots 1.4s steps(4) infinite}
 @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
-#big{font-size:5.5rem;font-weight:900;color:var(--gold);line-height:1;margin:6px 0}
+#big{font-size:5.5rem;font-weight:500;color:var(--gold);line-height:1;margin:6px 0}
 .pop{animation:pop .55s cubic-bezier(.2,1.6,.4,1) both}
 @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
 #qtop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
@@ -49,15 +52,17 @@ button{font:inherit;cursor:pointer;touch-action:manipulation}
 #ring svg{width:62px;height:62px;transform:rotate(-90deg)}
 #ring circle{fill:none;stroke-width:6}
 #ring .bg{stroke:rgba(255,255,255,.15)}#ring .fg{stroke:var(--gold);stroke-linecap:round;stroke-dasharray:170;transition:stroke .3s}
-#cdn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900}
+#cdn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:500}
 #ring.hot .fg{stroke:var(--bad)}#ring.hot #cdn{color:var(--bad);animation:beat .5s ease-in-out infinite}
 @keyframes beat{50%{transform:scale(1.18)}}
 #ac{color:var(--muted);font-size:.9rem;text-align:right}
-#qt{font-size:1.25rem;font-weight:800;margin:6px 0 14px;line-height:1.3;animation:qIn .45s cubic-bezier(.2,.9,.3,1) both}
+#m,#wh,#cdt,#qa,#rt,#rr,#rc,#er,#fh,#jn,#ac,#hq,.t5 h4,.hint{white-space:pre-line}
+#qt{white-space:pre-line;font-size:1.2rem;margin:6px 0 14px;line-height:1.3;animation:qIn .45s cubic-bezier(.2,.9,.3,1) both}
 @keyframes qIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 #ob{display:grid;gap:10px}
-#ob button{position:relative;border:0;border-radius:16px;padding:20px 14px 20px 52px;color:#fff;font-family:I,Arial,sans-serif;font-weight:700;font-size:1.08rem;text-align:left;box-shadow:0 5px 0 rgba(0,0,0,.28);
+#ob button{position:relative;border:0;border-radius:16px;padding:20px 14px 20px 52px;color:#fff;font-family:F,I,Arial,sans-serif;font-weight:500;font-size:1.08rem;text-align:left;box-shadow:0 5px 0 rgba(0,0,0,.28);
   transition:transform .18s cubic-bezier(.3,1.6,.5,1),opacity .25s,filter .25s;animation:bIn .35s cubic-bezier(.2,1.3,.4,1) both}
+#ob button small{display:block;font-size:.85em;opacity:.85;margin-top:3px}
 #ob button b{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:1.3rem;opacity:.9}
 #ob button:nth-child(2){animation-delay:.04s}#ob button:nth-child(3){animation-delay:.08s}#ob button:nth-child(4){animation-delay:.12s}
 @keyframes bIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
@@ -68,20 +73,20 @@ button{font:inherit;cursor:pointer;touch-action:manipulation}
 .c0{background:#c8243d}.c1{background:#1d5fb8}.c2{background:#b88a00}.c3{background:#2a7a1c}
 #qa{min-height:1.4em;margin-top:12px;font-weight:700;color:var(--ok)}
 #qa.in{animation:qIn .35s both}
-#ic{width:96px;height:96px;margin:4px auto 8px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3.2rem;font-weight:900;color:#fff}
+#ic{width:96px;height:96px;margin:4px auto 8px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3.2rem;font-weight:500;color:#fff}
 #ic.ok{background:var(--ok);box-shadow:0 0 0 0 rgba(47,210,122,.6);animation:pop .6s cubic-bezier(.2,1.6,.4,1) both,ring 1.4s .3s ease-out}
 #ic.no{background:var(--bad);animation:pop .5s both,shake .45s .45s}
 #ic.to{background:#4a5578;animation:pop .5s both}
 @keyframes ring{to{box-shadow:0 0 0 26px rgba(47,210,122,0)}}
 @keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
-#rt{font-size:1.7rem;font-weight:900}
-#rp{font-size:2.6rem;font-weight:900;color:var(--gold);margin:4px 0}
+#rt{font-size:1.7rem;font-weight:500}
+#rp{font-size:2.6rem;font-weight:500;color:var(--gold);margin:4px 0}
 #rr{font-size:1.1rem;font-weight:700;line-height:1.5}
 .up{color:var(--ok)}.dn{color:var(--bad)}
 #rc{margin-top:10px;padding:10px;border-radius:12px;background:rgba(255,255,255,.07);font-size:.95rem;line-height:1.5}
 .t5{margin-top:14px;text-align:left;font-size:1rem}.t5 h4{margin:0 0 2px;color:var(--muted);text-align:center}
 .t5 div{display:flex;gap:10px;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.08);margin-top:5px;animation:rowIn .4s cubic-bezier(.2,.9,.3,1.1) both}
-.t5 span,.t5 em,#rp,#big{font-family:J,I,Arial,sans-serif;font-weight:500}.t5 span{flex:1}.t5 div.me{background:rgba(210,170,118,.32);font-weight:800}
+.t5 span,.t5 em,#rp,#big{font-family:F,I,Arial,sans-serif;font-weight:500}.t5 span{flex:1}.t5 div.me{background:rgba(210,170,118,.32);font-weight:500}
 @keyframes rowIn{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
 .spin{width:54px;height:54px;margin:10px auto;border-radius:50%;border:5px solid rgba(255,255,255,.15);border-top-color:var(--gold);animation:sp .9s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -92,10 +97,10 @@ button{font:inherit;cursor:pointer;touch-action:manipulation}
 <body>
 <video id="tail" src="q/tail-phone.mp4" poster="q/tail-poster.jpg" autoplay muted loop playsinline></video>
 <div class="w">
- <div id="brand"><img class="lo" src="q/logo.png" alt="Air Astana"><img class="ti" src="q/title.png" alt="NQZ Maintenance Forum 2026"><div class="li"></div></div>
- <div id="hd"><div id="hq"></div><div id="ln"><img id="pp" alt="" src="q/plane.webp"></div></div>
- <div class="card" id="lg"><h1>Тілді таңдаңыз<br><span style="color:var(--muted);font-size:1rem">Выберите язык</span></h1><button class="go" data-l="kk">Қазақша</button><button class="go o" data-l="ru">Русский</button></div>
- <div class="card" id="fm"><h1 id="ft"></h1><p class="hint" id="fh"></p>
+ <div id="brand"><img class="lo" src="q/logo.png" alt="Air Astana"><img class="ti" src="q/title.png" alt="NQZ Maintenance Forum 2026"><div class="li"></div><img src="q/quiz-title.png" alt="QUIZ" style="height:26px;margin:4px 0 6px"></div>
+ <div id="hd"><img src="q/quiz-title.png" alt="QUIZ" style="display:block;height:16px;margin:0 auto 8px"><div id="hq"></div><div id="ln"><img id="pp" alt="" src="q/plane.webp"></div></div>
+ <div class="card" id="lg"><button class="go" data-l="kk">Қазақша</button><button class="go o" data-l="ru">Русский</button></div>
+ <div class="card" id="fm"><h1 id="ft" style="display:none"></h1><p class="hint" id="fh"></p>
   <input id="fn" placeholder="NAME" autocapitalize="characters" autocomplete="given-name"><input id="fs" placeholder="SURNAME" autocapitalize="characters" autocomplete="family-name">
   <button class="go" id="jn"></button><div class="er" id="er"></div></div>
  <div class="card" id="wt"><div id="fly"><i style="top:18px;width:70px"></i><i style="top:52px;width:110px;animation-delay:.5s"></i><i style="top:78px;width:50px;animation-delay:1.1s"></i><img id="fpl" alt=""></div><div id="m"></div><div class="hint" id="wh"></div></div>
@@ -104,21 +109,21 @@ button{font:inherit;cursor:pointer;touch-action:manipulation}
   <div id="qtop"><div id="ring"><svg viewBox="0 0 62 62"><circle class="bg" cx="31" cy="31" r="27"/><circle class="fg" id="arc" cx="31" cy="31" r="27"/></svg><div id="cdn"></div></div><div id="ac"></div></div>
   <div id="qt"></div><div id="ob"></div><div id="qa"></div></div>
  <div class="card" id="rs"><div id="rw"></div></div>
- <div class="hint" style="text-align:center;opacity:.55;margin-top:14px">r13</div>
+ 
 </div>
 <script>
-var VER="r13";
+var VER="r15";
 (function(){try{fetch(location.pathname+"?nc="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var VER="([^"]+)"/);if(m&&m[1]!==VER&&!sessionStorage.getItem("rl"+m[1])){sessionStorage.setItem("rl"+m[1],"1");location.replace(location.pathname+"?v="+m[1])}}).catch(function(){})}catch(e){}})();
 var U="https://forum-quiz.ars-30-07-1994.workers.dev",$=function(i){return document.getElementById(i)};
 var me=null,off=0,G=null,QS=null,LG=null,SH=["▲","◆","●","■"],DEV="";
 var cur=-1,phase="",shownAt=0,chosen=-1,myT=0,prevRk=0,pgk=-1,PR=null,running=false,lastSec=-1;
 var L={
-ru:{ft:"Викторина форума",fh:"Имя и фамилия латиницей",jn:"Войти в игру",closed:"Игра ещё не открыта. Подождите ведущего",bad:"Только латинские буквы",net:"Нет связи",busy:"Подождите, идёт вход…",
+ru:{ft:"QUIZ",fh:"Имя и фамилия латиницей",jn:"Войти в игру",closed:"Игра ещё не открыта. Подождите ведущего",bad:"Только латинские буквы",net:"Нет связи",busy:"Подождите, идёт вход…",
  inn:"Вы в игре",wait:"Ждите старта",start:"Старт через",q:"Вопрос",acc:"Ответ принят",calc:"Считаем результаты",ans:function(a,m){return"Ответили: "+a+" из "+m},top:"Топ-5",
  ok:"Верно!",no:"Неверно",to:"Время вышло",right:"Верный ответ",time:function(s){return"Ваше время: "+s+" с"},
  place:function(n,m){return n+"-е место из "+m},tot:function(s){return"Всего очков: "+s},fin:function(n,m){return"Вы заняли "+n+"-е место из "+m},thanks:"Спасибо за игру! Проходите в холл на кофе-брейк.",rejoin:"Игра обновлена, войдите снова",
  rules:"Правила: на каждый вопрос 5 секунд. Выбирайте ответ на телефоне. Чем быстрее верный ответ, тем больше очков (до 1000). Неверный ответ или отсутствие ответа: 0 очков. Побеждает набравший больше всех очков."},
-kk:{ft:"Форум викторинасы",fh:"Аты-жөніңізді ағылшын әріптерімен жазыңыз",jn:"Ойынға кіру",closed:"Ойын әлі ашылмаған. Жүргізушіні күтіңіз",bad:"Тек латын әріптері",net:"Байланыс жоқ",busy:"Күте тұрыңыз, кіру жүріп жатыр…",
+kk:{ft:"QUIZ",fh:"Аты-жөніңізді ағылшын әріптерімен жазыңыз",jn:"Ойынға кіру",closed:"Ойын әлі ашылмаған. Жүргізушіні күтіңіз",bad:"Тек латын әріптері",net:"Байланыс жоқ",busy:"Күте тұрыңыз, кіру жүріп жатыр…",
  inn:"Сіз ойындасыз",wait:"Бастауды күтіңіз",start:"Басталуына",q:"Сұрақ",acc:"Жауап қабылданды",calc:"Нәтижелер есептелуде",ans:function(a,m){return m+" ойыншының "+a+" жауап берді"},top:"Үздік 5",
  ok:"Дұрыс!",no:"Қате",to:"Уақыт бітті",right:"Дұрыс жауап",time:function(s){return"Жауап уақыты: "+s+" с"},
  place:function(n,m){return m+" қатысушының ішінде "+n+"-орын"},tot:function(s){return"Барлығы: "+s+" ұпай"},fin:function(n,m){return"Сіз "+m+" қатысушының ішінде "+n+"-орын алдыңыз"},thanks:"Ойынға қатысқаныңыз үшін рахмет! Кофе-брейкке холлға өтіңіздер.",rejoin:"Ойын жаңартылды, қайта кіріңіз",
@@ -216,12 +221,12 @@ function send(k,c,t,n){
 function prog(k){if(pgk!==k)return;api("qprog","&q="+k).then(function(r){if(pgk===k&&r&&r.a!=null){PR=r;paint()}}).catch(function(){});setTimeout(function(){prog(k)},1000+Math.random()*500)}
 function paint(){if(!PR)return;var t=S().ans(PR.a,PR.of);$("ac").textContent=t;if($("wc"))$("wc").textContent=t}
 function head(k){$("hd").style.display="block";$("hq").textContent=S().q+" "+(k+1)+" / "+QS.length;plane(k/QS.length)}
-function plane(f){$("pp").style.left="calc(10px + (100% - 104px)*"+Math.min(1,f)+")"}
+function plane(f){f=Math.min(1,f);var ln=$("ln"),n=QS.length;if(ln.getAttribute("data-n")!=n){[].slice.call(ln.querySelectorAll("i")).forEach(function(e){e.remove()});for(var i=0;i<=n;i++){var d=document.createElement("i");d.style.left="calc(52px + (100% - 104px)*"+(i/n)+")";ln.appendChild(d)}ln.setAttribute("data-n",n)}[].forEach.call(ln.querySelectorAll("i"),function(d,i){d.classList.toggle("on",i<=Math.round(f*n))});$("pp").style.left="calc(10px + (100% - 104px)*"+f+")"}
 
 function endQ(k){
   phase="r";var s=S();
   if(chosen<0)$("ob").classList.add("done");
-  $("rw").innerHTML="<div class='spin'></div><div style='font-weight:800;font-size:1.2rem'><span class='dots'>"+esc(s.calc)+"</span></div><div class='hint' id='wc'></div>";
+  $("rw").innerHTML="<div class='spin'></div><div style='font-weight:500;font-size:1.2rem'><span class='dots'>"+esc(s.calc)+"</span></div><div class='hint' id='wc'></div>";
   restart("rs");show("rs");
   setTimeout(function again(){
     if(cur!==k)return;
