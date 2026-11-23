@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REGISTRATION — большой экран</title>
+<style>
+@font-face{font-family:F;src:url(q/futura-like.woff) format("woff");font-weight:500;font-display:swap;unicode-range:U+0000-03FF,U+2000-2BFF}
+@font-face{font-family:F;src:url(q/montserrat-cyr.woff) format("woff");font-weight:500;font-display:swap;unicode-range:U+0400-052F}
+*{box-sizing:border-box;margin:0}
+html,body{width:100vw;height:100vh;overflow:hidden;background:#010c18;color:#eef1ff;font-family:F,Arial,sans-serif;font-weight:500}
+.g{display:grid;grid-template-columns:auto 1fr;gap:5vw;align-items:center;height:100%;padding:4vh 4vw;position:relative;z-index:1}
+.qw{background:#fff;border-radius:2vh;padding:3vh;box-shadow:0 0 60px rgba(210,170,118,.25)}
+.qw img{display:block;height:68vh;width:68vh;image-rendering:pixelated}
+.qc{margin-top:2.4vh;font-size:3.1vh;letter-spacing:.06em;text-align:center}
+.gold{color:#D2AA76}.mut{color:#9fb0cf}
+.r{align-self:start;padding-top:5vh}
+.li{height:2px;background:#D2AA76;opacity:.55;width:45%;margin:4.5vh 0}
+.t{font-size:3vh;line-height:1.6;max-width:40vw}
+#tail{position:fixed;right:-1vw;bottom:0;height:36vh;aspect-ratio:907/834;object-fit:cover;pointer-events:none;
+ -webkit-mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 80%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 22%);-webkit-mask-composite:source-in;
+ mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 80%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 22%);mask-composite:intersect}
+</style>
+</head>
+<body>
+<div class="g">
+ <div style="display:flex;flex-direction:column;align-items:center">
+  <div class="qw"><img src="q/qr-registration.png" alt="QR"></div>
+  <div class="qc">QR кодты сканерлеңіз <span class="gold">·</span> Сканируйте QR</div>
+ </div>
+ <div class="r">
+  <img src="q/logo.png" alt="Air Astana" style="height:6.5vh">
+  <img src="q/title.png" alt="NQZ Maintenance Forum 2026" style="display:block;width:100%;margin-top:4vh">
+  <img src="q/registration-title.png" alt="REGISTRATION" style="display:block;width:68%;margin-top:3.5vh">
+  <div class="li"></div>
+  <div class="t">Тіркеліп, бейджіңізді стойкадан алыңыз<br><span class="mut">Зарегистрируйтесь и заберите бейдж у стойки</span></div>
+ </div>
+</div>
+<video id="tail" src="q/tail-big.mp4" poster="q/tail-poster.jpg" autoplay muted loop playsinline></video>
+</body>
+</html>
