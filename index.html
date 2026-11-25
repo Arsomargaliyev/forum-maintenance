@@ -80,10 +80,8 @@ input[type=text]:focus{outline:2px solid var(--gold);border-color:transparent}
   <div class="logo" role="img" aria-label="Air Astana"></div>
   <div class="card">
     <h2>Регистрация</h2>
-    <p class="hint">Пишите латинскими буквами, как в пропуске. / Please use Latin letters, as in your company ID.</p>
-    <label for="sn">Surname / Фамилия</label><input type="text" id="sn" autocomplete="family-name" autocapitalize="characters" placeholder="IVANOV">
-    <label for="nm">Name / Имя</label><input type="text" id="nm" autocomplete="given-name" autocapitalize="characters" placeholder="ALEX">
-    <label for="tb">Employee ID / Табельный номер</label><input type="text" id="tb" autocapitalize="characters" placeholder="12345">
+    <p class="hint">Введите только табельный номер. / Enter your Employee ID only.</p>
+    <label for="tb">Табельный номер / Employee ID</label><input type="text" id="tb" inputmode="numeric" autocapitalize="characters" autocomplete="off" placeholder="12345">
     <div class="err" id="err" role="alert"></div>
     <button class="send" id="send">Зарегистрироваться / Register</button>
   </div>
@@ -119,22 +117,20 @@ var ENDPOINT="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8S
 var $=function(i){return document.getElementById(i)},LT="";
 var ERR={
   bad:"Проверьте данные / Please check your details",
-  notfound:"Табельный номер не найден в списке сотрудников. Проверьте номер или подойдите к стойке регистрации. / Employee ID not found, please check it or go to the registration desk",
-  mismatch:"Фамилия или имя не совпадают с табельным номером. Проверьте написание или подойдите к стойке. / Name does not match the Employee ID"
+  notfound:"Табельный номер не найден в списке сотрудников. Проверьте номер или подойдите к стойке регистрации. / Employee ID not found, please check it or go to the registration desk"
 };
 function show(id){var tv=$("tail");if(id==="s1"){var pr=tv.play();pr&&pr.catch&&pr.catch(function(){})}else tv.pause();document.body.classList.toggle("quiet",id!=="s1");["s1","s2","s3","s4"].forEach(function(s){$(s).classList.toggle("on",s===id)});window.scrollTo(0,0)}
 $("start").onclick=function(){show("s2");try{history.pushState({s:2},"")}catch(e){}};
 window.onpopstate=function(){show("s1")};
 function sendBtn(on){var b=$("send");b.disabled=!on;b.textContent=on?"Зарегистрироваться / Register":"Проверяем… / Checking…"}
 $("send").onclick=function(){
-  var sn=$("sn").value.trim().toUpperCase(),nm=$("nm").value.trim().toUpperCase(),tb=$("tb").value.replace(/\s+/g,"").toUpperCase();
+  var tb=$("tb").value.replace(/\s+/g,"").toUpperCase();
   var e=$("err");e.textContent="";
-  if(!/^[A-Z][A-Z '-]{1,29}$/.test(sn)||!/^[A-Z][A-Z '-]{1,29}$/.test(nm)){e.textContent="Только латинские буквы / Latin letters only";return}
-  if(!/^[0-9A-Z-]{2,12}$/.test(tb)){e.textContent="Табельный: цифры и латинские буквы / ID: digits and Latin letters";return}
+  if(!/^[0-9A-Z.-]{1,20}$/.test(tb)){e.textContent="Введите табельный номер / Enter your Employee ID";return}
   sendBtn(false);
-  function who(r){return (r.surname||sn)+" "+(r.name||nm)}
+  function who(r){return ((r.surname||"")+" "+(r.name||"")).trim()}
   function fail(t){e.textContent=t||"Не удалось сохранить, попробуйте ещё раз или подойдите к стойке / Could not save, please try again";sendBtn(true)}
-  fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify([{surname:sn,name:nm,tab:tb}])})
+  fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify([{tab:tb}])})
   .then(function(r){return r.text()}).then(function(x){
     var r;try{r=JSON.parse(x)}catch(_){r=x.trim()==="ok"?{ok:1}:{}}
     if(r.ok){$("okWho").textContent=who(r);show("s3");return}

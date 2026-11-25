@@ -50,12 +50,11 @@ button{background:#3a6bff;border:0;font-weight:700}
 <body>
 <div class="c">
  <div class="card">
-  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v22 (шрифт Inter Bold)</span>
+  <b>Подключение</b> <span class="sm">· версия: этикетка 58×40 v23 (белая, вход по табельному)</span>
   <input id="u" placeholder="Адрес скрипта (/exec)" value="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec"><input id="k" type="password" placeholder="Ключ">
   <div class="r"><input id="w" type="number" value="58"><span class="sm">ширина этикетки, мм</span><input id="h" type="number" value="40"><span class="sm">высота этикетки, мм</span></div>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="two" style="width:auto" checked> Две одинаковые этикетки на человека: на бейдж и в лототрон</label>
   <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="flip" style="width:auto"> Развернуть на 180° (если печатается вверх ногами)</label>
-  <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="inv" style="width:auto"> Чёрная этикетка с белыми буквами (сначала проверьте тестом ниже)</label>
   <div class="sm">Если принтер подаёт этикетку узкой стороной вперёд, поменяйте местами ширину и высоту: текст повернётся сам.</div>
   <button id="go">Старт</button>
  </div>
@@ -72,8 +71,9 @@ button{background:#3a6bff;border:0;font-weight:700}
  </div>
  <div class="card">
   <b>Ручная регистрация (без телефона)</b>
+  <div class="r"><input id="mt" placeholder="Табельный номер"><select id="md"><option>1</option><option>2</option></select></div>
+  <div class="sm" style="margin:4px 0">Фамилию и имя вписывать, только если человека нет в списке сотрудников:</div>
   <div class="r"><input id="ms" placeholder="SURNAME"><input id="mn" placeholder="NAME"></div>
-  <div class="r"><input id="mt" placeholder="ID"><select id="md"><option>1</option><option>2</option></select></div>
   <button id="add">Добавить и напечатать</button>
   <div id="dupm" style="display:none;margin-top:8px;padding:10px;border-radius:8px;background:#3a2a10;border:1px solid #a87a2a"><div id="dupt" style="margin-bottom:6px;font-weight:700"></div><button id="rpb" style="background:#c9962b;color:#111">Распечатать повторно</button></div>
  </div>
@@ -91,19 +91,19 @@ var DY=0;
 KEEP.forEach(function(i){try{var v=localStorage.getItem("c_"+i);if(v)$(i).value=v}catch(e){}});
 // раньше по умолчанию было 60 мм: один раз переводим сохранённую ширину на 58
 try{if(!localStorage.getItem("c_v58")){if($("w").value==="60")$("w").value="58";if($("h").value==="60")$("h").value="58";localStorage.setItem("c_v58","1")}}catch(e){}
-try{if(localStorage.getItem("c_two")==="0")$("two").checked=false;if(localStorage.getItem("c_flip")==="1")$("flip").checked=true;if(localStorage.getItem("c_inv")==="1")$("inv").checked=true;var tv=localStorage.getItem("c_tn");if(tv)$("tn").value=tv}catch(e){}
-function save(){try{KEEP.forEach(function(i){localStorage.setItem("c_"+i,$(i).value)});localStorage.setItem("c_two",$("two").checked?"1":"0");localStorage.setItem("c_flip",$("flip").checked?"1":"0");localStorage.setItem("c_inv",$("inv").checked?"1":"0");localStorage.setItem("c_tn",$("tn").value)}catch(e){}}
+try{if(localStorage.getItem("c_two")==="0")$("two").checked=false;if(localStorage.getItem("c_flip")==="1")$("flip").checked=true;var tv=localStorage.getItem("c_tn");if(tv)$("tn").value=tv}catch(e){}
+function save(){try{KEEP.forEach(function(i){localStorage.setItem("c_"+i,$(i).value)});localStorage.setItem("c_two",$("two").checked?"1":"0");localStorage.setItem("c_flip",$("flip").checked?"1":"0");localStorage.setItem("c_tn",$("tn").value)}catch(e){}}
 function log(t){$("log").textContent=t}
 function stat(){$("st").textContent="Ждут выдачи: "+wait.length+" · В печати: "+q.length+" · Напечатано: "+printed}
 function api(a,x){return fetch(U+"?action="+a+"&key="+encodeURIComponent(K)+(x||""))}
 // Белая этикетка: страница на 2 мм короче, чтобы никогда не заезжать на следующую.
 // Чёрная этикетка: страница ровно в размер этикетки, иначе по краям остаются белые полоски
 // (принтер настроен: Gap Offset 0, Tear Off — лента встаёт точно по промежутку).
-function spare(){return $("inv").checked?0:2}
+function spare(){return 2}
 function size(){var pw=parseFloat($("w").value)||58,ph=(parseFloat($("h").value)||40)-spare(),rot=ph>pw,st=document.documentElement.style;
   $("pg").textContent="@page{size:"+pw+"mm "+ph+"mm;margin:0}";st.setProperty("--dy",DY+"mm");
   st.setProperty("--pw",pw+"mm");st.setProperty("--ph",ph+"mm");st.setProperty("--lw",(rot?ph:pw)+"mm");st.setProperty("--lh",(rot?pw:ph)+"mm");
-  [].forEach.call(document.querySelectorAll("#badge .pg"),function(el){el.className="pg"+(rot?" rot":"")+($("flip").checked?" flip":"")+($("inv").checked?" inv":"")});
+  [].forEach.call(document.querySelectorAll("#badge .pg"),function(el){el.className="pg"+(rot?" rot":"")+($("flip").checked?" flip":"")});
   $("p2").style.display=$("two").checked?"":"none"}
 // Подгонка: шрифт уменьшается, пока строка не влезет по ширине. Если и на минимуме не влезает
 // (очень длинная фамилия), строка переносится, обычно по дефису: ABDRAKHMANOVA-/KUZNETSOVA.
@@ -164,20 +164,20 @@ $("tst").onclick=function(){if(busy)return;var n=Math.max(1,Math.min(500,parseIn
   setTimeout(function(){window.print();setTimeout(function(){tmp.forEach(function(p){p.remove()});$("p1").style.display="";show(PV);busy=false;next()},700)},200)};
 $("auto").onchange=flush;
 var PV={surname:"KASSYMOVA",name:"AIGERIM",tab:"777",day:"1",team:"IST"};
-["w","h","two","flip","inv","tn"].forEach(function(i){$(i).addEventListener("input",function(){save();show(PV)})});
+["w","h","two","flip","tn"].forEach(function(i){$(i).addEventListener("input",function(){save();show(PV)})});
 show(PV);
 // шрифт встроен, но подгонку размера делаем ещё раз, когда он точно загрузился
 if(document.fonts&&document.fonts.load)document.fonts.load('700 10px "LabelInter"').then(function(){show(PV)});
 $("add").onclick=function(){
   var s=$("ms").value.trim().toUpperCase(),n=$("mn").value.trim().toUpperCase(),t=$("mt").value.replace(/\s+/g,"").toUpperCase();
   $("dupm").style.display="none";
-  if(!s||!n||!t){log("Заполните фамилию, имя и ID");return}if(!timer)start();if(!U)return;
+  if(!t){log("Введите табельный номер");return}if(!timer)start();if(!U)return;
   $("add").disabled=true;
   fetch(U,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({key:K,rows:[{surname:s,name:n,tab:t,day:$("md").value}]})})
   .then(function(r){return r.text()}).then(function(x){var r;try{r=JSON.parse(x)}catch(e){r={err:x.slice(0,60)}}
     if(r.ok){["ms","mn","mt"].forEach(function(i){$(i).value=""});log("Добавлено, печать через пару секунд");setTimeout(poll,800);return}
     if(r.err==="dup"){LT=r.tab||t;$("dupt").textContent="Уже зарегистрирован(а) сегодня: "+(r.surname||s)+" "+(r.name||n)+" · ID "+LT+". Новая строка в таблицу не добавлена.";$("dupm").style.display="block";return}
-    log(r.err==="bad"?"Проверьте данные: только латинские буквы, ID — цифры и буквы":"Не сохранилось: "+r.err)})
+    log(r.err==="need"?"Табельного нет в списке сотрудников — впишите фамилию и имя латиницей и нажмите ещё раз":r.err==="bad"?"Проверьте данные: только латинские буквы, ID — цифры и буквы":"Не сохранилось: "+r.err)})
   .catch(function(){log("Нет связи, попробуйте ещё раз")})
   .then(function(){$("add").disabled=false});
 };
