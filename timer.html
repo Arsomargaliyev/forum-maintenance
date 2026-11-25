@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TIMER — большой экран</title>
+<style>
+@font-face{font-family:F;src:url(q/futura-like.woff) format("woff");font-weight:500;font-display:swap;unicode-range:U+0000-03FF,U+2000-2BFF}
+@font-face{font-family:F;src:url(q/montserrat-cyr.woff) format("woff");font-weight:500;font-display:swap;unicode-range:U+0400-052F}
+:root{--gold:#D2AA76;--bg:#010c18;--text:#eef1ff;--muted:#9fb0cf;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:F,Arial,sans-serif;font-weight:500}
+body{background:radial-gradient(ellipse at 50% 0,rgba(210,170,118,.13),transparent 60%),var(--bg)}
+body.hide{cursor:none}
+/* шапка как на других экранах форума */
+.hd{position:absolute;top:5vh;left:0;right:0;display:flex;flex-direction:column;align-items:center;z-index:1}
+.hd .logo{height:5.5vh}
+.hd .ti{height:13vh;margin-top:3vh}
+.hd .li{height:2px;width:28vw;background:var(--gold);opacity:.55;margin-top:3vh}
+/* цифры */
+.mid{position:absolute;left:0;right:0;top:33vh;bottom:12vh;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1}
+#cap{font-size:3.4vh;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;min-height:4vh;margin-bottom:1vh}
+#t{font-size:min(36vh,26vw);line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums;text-shadow:0 0 60px rgba(210,170,118,.18);transition:color .4s}
+#t .c{display:inline-block;width:.32em;text-align:center;transform:translateY(-.06em)}
+#t .d{display:inline-block;width:.6em;text-align:center}
+body.last #t{color:var(--gold)}
+body.done #t{color:var(--gold);animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+body.paused:not(.idle) #t .c{animation:blink 1.2s ease-in-out infinite}
+#end{font-size:4.2vh;letter-spacing:.12em;margin-top:2vh;min-height:5vh;opacity:0;transition:opacity .5s}
+body.done #end{opacity:1}
+#end .m{color:var(--muted)}
+/* полоска прогресса внизу */
+.bar{position:absolute;left:8vw;right:8vw;bottom:8vh;height:.7vh;background:rgba(210,170,118,.16);border-radius:1vh;overflow:hidden;z-index:1}
+#bf{height:100%;width:100%;background:var(--gold);border-radius:1vh;transform-origin:left;box-shadow:0 0 20px rgba(210,170,118,.6)}
+#tail{position:fixed;right:-1vw;bottom:0;height:34vh;aspect-ratio:907/834;object-fit:cover;pointer-events:none;opacity:.85;
+ -webkit-mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 80%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 22%);-webkit-mask-composite:source-in;
+ mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 80%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 22%);mask-composite:intersect}
+/* пульт: появляется при движении мыши, прячется через 3 с */
+.pan{position:fixed;left:50%;bottom:1.6vh;transform:translateX(-50%);display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;
+ padding:10px 14px;border:1px solid rgba(210,170,118,.38);border-radius:999px;background:rgba(1,12,24,.86);z-index:5;transition:opacity .4s;max-width:96vw}
+body.hide .pan{opacity:0;pointer-events:none}
+.pan button{font:inherit;font-size:15px;color:var(--gold);background:transparent;border:1.5px solid rgba(210,170,118,.6);border-radius:999px;padding:7px 14px;cursor:pointer}
+.pan button:hover{background:rgba(210,170,118,.12)}
+.pan button.p{background:var(--gold);color:#24180a;border-color:var(--gold);min-width:110px}
+.pan .sep{width:1px;height:24px;background:rgba(210,170,118,.35)}
+.pan input{font:inherit;font-size:15px;width:64px;padding:7px 10px;border-radius:999px;border:1.5px solid rgba(210,170,118,.6);background:transparent;color:#fff;text-align:center}
+.pan .h{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body class="idle paused">
+<div class="hd">
+ <img class="logo" src="q/logo.png" alt="Air Astana">
+ <img class="ti" src="q/title.png" alt="NQZ Maintenance Forum 2026">
+ <div class="li"></div>
+</div>
+<div class="mid">
+ <div id="cap"></div>
+ <div id="t">10:00</div>
+ <div id="end">Уақыт бітті <span class="m">·</span> Время вышло <span class="m">·</span> Time's up</div>
+</div>
+<div class="bar"><div id="bf"></div></div>
+<video id="tail" src="q/tail-big.mp4" poster="q/tail-poster.jpg" autoplay muted loop playsinline></video>
+
+<div class="pan" id="pan">
+ <button data-m="5">5</button><button data-m="10">10</button><button data-m="15">15</button><button data-m="20">20</button><button data-m="30">30</button>
+ <input id="mi" type="number" min="1" max="180" title="Своё время, минут"><span class="h">мин</span>
+ <span class="sep"></span>
+ <button id="mm" title="−1 минута (стрелка вниз)">−1</button><button id="mp" title="+1 минута (стрелка вверх)">+1</button>
+ <button class="p" id="go">Старт</button>
+ <button id="rs" title="Сброс (R)">Сброс</button>
+ <button id="fs" title="Во весь экран (F)">⛶</button>
+ <button id="snd" title="Звук в конце (S)">🔔</button>
+</div>
+
+<script>
+// Таймер для большого экрана.
+// Клавиши: Пробел — старт/пауза · R — сброс · ↑/↓ — ±1 мин · ←/→ — ±10 с · F — весь экран · S — звук.
+// Время по умолчанию — из адреса (?m=10) или последнее выбранное, иначе 10 минут. Подпись над цифрами: ?t=WORKSHOP
+var $=function(i){return document.getElementById(i)},B=document.body;
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+var qs=new URLSearchParams(location.search);
+var total=(parseFloat(qs.get("m"))||parseFloat(ls("tm_min"))||10)*60000;   // мс
+var base=total,left=total,endAt=0,running=false,sound=ls("tm_snd")!=="0",rang=false;
+$("cap").textContent=qs.get("t")||"";
+$("mi").value=Math.round(total/60000);
+
+function fmt(ms){var s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;
+  var dd=function(n){return String(n).padStart(2,"0").split("").map(function(c){return '<span class="d">'+c+'</span>'}).join("")};
+  return (h?dd(h).replace(/^<span class="d">0<\/span>/,"")+'<span class="c">:</span>':"")+dd(m)+'<span class="c">:</span>'+dd(x)}
+function draw(){
+  var ms=running?Math.max(0,endAt-Date.now()):left;
+  $("t").innerHTML=fmt(ms);
+  $("bf").style.transform="scaleX("+(total?ms/total:0)+")";
+  B.classList.toggle("last",ms>0&&ms<=60000);
+  B.classList.toggle("done",ms<=0);
+  if(running&&ms<=0){running=false;left=0;B.classList.add("paused");$("go").textContent="Старт";if(!rang){rang=true;chime()}}
+}
+function tick(){draw();if(running)requestAnimationFrame(tick)}
+function start(){if(running)return;if(left<=0)left=total;rang=false;endAt=Date.now()+left;running=true;B.classList.remove("paused","idle");$("go").textContent="Пауза";unlock();tick()}
+function pause(){if(!running)return;left=Math.max(0,endAt-Date.now());running=false;B.classList.add("paused");$("go").textContent="Старт";draw()}
+function toggle(){running?pause():start()}
+function reset(){running=false;total=base;left=base;rang=false;B.classList.add("paused","idle");$("go").textContent="Старт";draw()}
+function setMs(ms){ms=Math.max(10000,Math.min(180*60000,ms));base=ms;ls("tm_min",String(ms/60000));$("mi").value=Math.round(ms/60000);reset()}
+function setMin(m){setMs(m*60000)}
+// ±: во время отсчёта и на паузе добавляет/убирает время; до старта меняет выбранное время. «Сброс» — к выбранному времени.
+function shift(ms){
+  if(running){endAt=Math.max(Date.now()+1000,endAt+ms);total=Math.max(total,endAt-Date.now())}
+  else if(B.classList.contains("idle")){setMs(base+ms);return}
+  else{left=Math.max(1000,left+ms);total=Math.max(total,left)}
+  rang=false;draw()}
+
+// звук в конце: три мягких тона (Web Audio, без файлов)
+var ac=null;
+function unlock(){if(!sound)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume()}catch(e){}}
+function chime(){if(!sound||!ac)return;[0,.45,.9].forEach(function(d,i){var o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+d;
+  o.type="sine";o.frequency.value=[784,659,523][i];g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.35,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+1.4);
+  o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+1.5)})}
+function sndUi(){$("snd").textContent=sound?"🔔":"🔕";$("snd").title=sound?"Звук в конце включён (S)":"Звук выключен (S)"}
+
+function full(){var d=document;if(!d.fullscreenElement)d.documentElement.requestFullscreen&&d.documentElement.requestFullscreen().catch(function(){});else d.exitFullscreen()}
+
+[].forEach.call(document.querySelectorAll("[data-m]"),function(b){b.onclick=function(){setMin(+b.dataset.m)}});
+$("mi").onchange=function(){var v=parseFloat(this.value);if(v)setMin(v)};
+$("mi").onkeydown=function(e){e.stopPropagation();if(e.key==="Enter"){this.onchange();this.blur()}};
+$("mm").onclick=function(){shift(-60000)};$("mp").onclick=function(){shift(60000)};
+$("go").onclick=toggle;$("rs").onclick=reset;$("fs").onclick=full;
+$("snd").onclick=function(){sound=!sound;ls("tm_snd",sound?"1":"0");sndUi();unlock()};
+document.addEventListener("keydown",function(e){
+  if(e.key===" "||e.key==="Enter"){e.preventDefault();toggle()}
+  else if(e.key==="r"||e.key==="R"||e.key==="к"||e.key==="К")reset();
+  else if(e.key==="f"||e.key==="F"||e.key==="а"||e.key==="А")full();
+  else if(e.key==="s"||e.key==="S"||e.key==="ы"||e.key==="Ы")$("snd").onclick();
+  else if(e.key==="ArrowUp"){e.preventDefault();shift(60000)}
+  else if(e.key==="ArrowDown"){e.preventDefault();shift(-60000)}
+  else if(e.key==="ArrowRight")shift(10000);
+  else if(e.key==="ArrowLeft")shift(-10000);
+  else return;
+  wake()});
+// пульт прячется, когда мышь не двигается
+var ht=null;function wake(){B.classList.remove("hide");clearTimeout(ht);ht=setTimeout(function(){if(document.activeElement!==$("mi"))B.classList.add("hide")},3000)}
+document.addEventListener("mousemove",wake);
+// пока вкладка в фоне, requestAnimationFrame спит — догоняем при возврате и раз в секунду
+setInterval(function(){if(running)draw()},500);
+sndUi();draw();wake();
+</script>
+</body>
+</html>
