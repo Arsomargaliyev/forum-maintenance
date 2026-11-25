@@ -119,9 +119,6 @@ details .card{margin-top:10px}
   </div>
  </div>
 
- <!-- настройки зашиты: этикетка 58×40, две на человека, без разворота, ключ станции, автопечать всегда -->
- <div hidden><input id="k" value="12345"><input id="u" value="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec"><input id="w" value="58"><input id="h" value="40">
-  <input type="checkbox" id="two" checked><input type="checkbox" id="flip"><input type="checkbox" id="auto" checked></div>
 </div>
 <div id="prev"><div id="badge">
  <div class="pg" id="p1"><div class="lab"><div class="n" id="aN"></div><div class="s" id="aS"></div><div class="tm" id="aT"></div></div></div>
@@ -132,6 +129,9 @@ var $=function(i){return document.getElementById(i)},q=[],wait=[],busy=false,see
 var TEAMS=["IST","DXB","FRA","PEK","ICN","HKT","AYT","TGD","TAS","TBS"];   // те же 10 команд, что в скрипте Google
 // Принтер XP-365B настроен (Gap Offset 0, Tear Off) — сдвига нет. Если понадобится сдвиг вниз — менять здесь (мм).
 var DY=0;
+// Настройки зашиты в код (на экране их нет, браузер не может их подменить):
+// этикетка 58×40 мм, ДВЕ одинаковые этикетки на человека, без разворота, автопечать всегда.
+var LW=58,LH=40,TWO=true,FLIP=false,AUTO=true,SKEY="12345",SURL="https://script.google.com/macros/s/AKfycbzQtnSgbqqLDmFXDgPs_b5CV8SjHtJJYJOQzsit5gA16d4OPZCBN_1TKNJ7IWGGkhOWWg/exec";
 function ls(a,b){try{if(b===undefined)return localStorage.getItem(a);localStorage.setItem(a,b)}catch(e){return null}}
 function save(){}
 function msg(t,c){var m=$("mm");m.textContent=t;m.className="msg"+(c?" "+c:"")}
@@ -142,11 +142,11 @@ function tfetch(url,opt,ms){var c=window.AbortController?new AbortController():n
 
 /* ---------- этикетка ---------- */
 function spare(){return 2}   // страница на 2 мм короче этикетки, чтобы не заезжать на следующую
-function size(){var pw=parseFloat($("w").value)||58,ph=(parseFloat($("h").value)||40)-spare(),rot=ph>pw,st=document.documentElement.style;
+function size(){var pw=LW,ph=LH-spare(),rot=ph>pw,st=document.documentElement.style;
   $("pg").textContent="@page{size:"+pw+"mm "+ph+"mm;margin:0}";st.setProperty("--dy",DY+"mm");
   st.setProperty("--pw",pw+"mm");st.setProperty("--ph",ph+"mm");st.setProperty("--lw",(rot?ph:pw)+"mm");st.setProperty("--lh",(rot?pw:ph)+"mm");
-  [].forEach.call(document.querySelectorAll("#badge .pg"),function(el){el.className="pg"+(rot?" rot":"")+($("flip").checked?" flip":"")});
-  $("p2").style.display=$("two").checked?"":"none"}
+  [].forEach.call(document.querySelectorAll("#badge .pg"),function(el){el.className="pg"+(rot?" rot":"")+(FLIP?" flip":"")});
+  $("p2").style.display=TWO?"":"none"}
 function fit(el,max,min){el.style.whiteSpace="nowrap";var mm=max;el.style.fontSize=mm+"mm";
   while(el.scrollWidth>el.clientWidth+0.5&&mm>min){mm-=.2;el.style.fontSize=mm+"mm"}
   if(el.scrollWidth>el.clientWidth+0.5){el.style.whiteSpace="normal"}return mm}
@@ -158,7 +158,7 @@ function setTeam(el,code){code=String(code||"").replace(/[^A-Z]/g,"").slice(0,4)
 function show(r){size();
   $("aN").textContent=$("bN").textContent=r.name;$("aS").textContent=$("bS").textContent=r.surname;
   setTeam($("aT"),r.team);setTeam($("bT"),r.team);
-  var k=Math.min(parseFloat($("w").value)||58,parseFloat($("h").value)||40)/40;
+  var k=Math.min(LW,LH)/40;
   fitLab($("p1").firstChild,$("aN"),$("aS"),11.5*k,8.5*k);fitLab($("p2").firstChild,$("bN"),$("bS"),11.5*k,8.5*k)}
 function printNow(r,cb){show(r);setTimeout(function(){window.print();setTimeout(cb,700)},150)}
 
@@ -170,7 +170,7 @@ function render(){var el=$("wl");el.textContent="";wait.forEach(function(r){var 
 function stat(){var off=offList().length,t=LAST.total;
   $("tot").innerHTML=t===null&&!off?"—":String((t||0)+off)+(off?' <small>('+off+' без связи)</small>':"");
   var n=wait.length+q.length;$("wt").textContent=n?"Ждут печати: "+n:" "}
-function flush(){if($("auto").checked){q=q.concat(wait);wait=[]}render();stat();next()}
+function flush(){if(AUTO){q=q.concat(wait);wait=[]}render();stat();next()}
 function next(){if(busy||!q.length)return;busy=true;var r=q.shift();
   printNow(r,function(){busy=false;stat();next();
     if(r.row)api("done","&row="+r.row).catch(function(){})})}
@@ -185,7 +185,7 @@ function poll(){if(polling)return;polling=true;tfetch(U+"?action=pending&v=2&key
   rows.forEach(function(r){var sk=r.row+"|"+(r.rp||"");if(!seen[sk]){seen[sk]=1;wait.push(r)}});
   flush();conn(true,"Связь с таблицей есть");if(offList().length)syncOff()})
   .catch(function(e){conn(false,"Нет связи: "+why(e.message||String(e)));stat()}).then(function(){polling=false})}
-function start(){U=$("u").value.trim();K=$("k").value.trim();
+function start(){U=SURL;K=SKEY;
   save();size();clearInterval(timer);poll();timer=setInterval(poll,2000)}
 
 /* ---------- ручная регистрация (без табельного) ---------- */
