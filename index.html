@@ -130,13 +130,28 @@ $("send").onclick=function(){
   sendBtn(false);
   function who(r){return ((r.surname||"")+" "+(r.name||"")).trim()}
   function fail(t){e.textContent=t||"Не удалось сохранить, попробуйте ещё раз или подойдите к стойке / Could not save, please try again";sendBtn(true)}
-  fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify([{tab:tb}])})
-  .then(function(r){return r.text()}).then(function(x){
-    var r;try{r=JSON.parse(x)}catch(_){r=x.trim()==="ok"?{ok:1}:{}}
-    if(r.ok){$("okWho").textContent=who(r);show("s3");return}
-    if(r.err==="dup"){LT=r.tab||tb;$("dupWho").textContent=who(r);$("rmsg").textContent="";sendBtn(true);show("s4");return}
-    fail(ERR[r.err])})
-  .catch(function(){fail("Нет связи, попробуйте ещё раз / No connection, please try again")});
+  // Если скрипт Google занят (много людей сразу) или связь моргнула — тихо повторяем до 5 раз,
+  // человек видит «Регистрируем…», а не ошибку. Дублей не будет: повтор того же номера в тот же день
+  // возвращает «dup», и после повтора это считается успехом (первая попытка успела записаться).
+  var tries=0;
+  function attempt(){
+    tries++;
+    fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify([{tab:tb}])})
+    .then(function(r){return r.text()}).then(function(x){
+      var r;try{r=JSON.parse(x)}catch(_){r=x.trim()==="ok"?{ok:1}:{busy:1}}
+      if(r.ok){$("okWho").textContent=who(r);sendBtn(true);show("s3");return}
+      if(r.err==="dup"&&tries>1){$("okWho").textContent=who(r);sendBtn(true);show("s3");return}
+      if(r.err==="dup"){LT=r.tab||tb;$("dupWho").textContent=who(r);$("rmsg").textContent="";sendBtn(true);show("s4");return}
+      if(r.busy||r.err==="busy"||r.err==="server")return retry();
+      fail(ERR[r.err])})
+    .catch(retry);
+  }
+  function retry(){
+    if(tries>=5){fail();return}
+    $("send").textContent="Регистрируем… / Please wait";
+    setTimeout(attempt,1500+Math.random()*2500);
+  }
+  attempt();
 };
 $("again").onclick=function(){
   var b=$("again"),m=$("rmsg");b.disabled=true;m.style.color="";m.textContent="…";
