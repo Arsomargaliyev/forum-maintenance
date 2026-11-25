@@ -77,7 +77,8 @@ details .card{margin-top:10px}
 .lab .tm{display:flex;align-items:center;justify-content:center;gap:.9mm;margin-top:2.2mm;font-size:3.3mm;font-weight:700;letter-spacing:.28em;line-height:1}
 .lab .tm svg{height:3mm;width:3mm;flex:none}
 .lab .tm:empty{display:none}
-@media print{html,body{background:#fff!important;padding:0;margin:0}.c,#prev .sm{display:none!important}#prev{margin:0;max-width:none}
+/* печать: светлая схема, иначе Chrome красит поля вокруг этикетки тёмным (чёрные полосы сверху и снизу) */
+@media print{:root{color-scheme:light!important}html,body{background:#fff!important;padding:0;margin:0}.c,#prev .sm{display:none!important}#prev{margin:0;max-width:none}
   #badge{display:block;margin:0}.pg{box-shadow:none;border-radius:0;page-break-after:always;break-after:page}.pg:last-child{page-break-after:auto;break-after:auto}}
 </style>
 </head>
