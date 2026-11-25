@@ -13,27 +13,27 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);color:va
 body{background:radial-gradient(ellipse at 50% 0,rgba(210,170,118,.13),transparent 60%),var(--bg)}
 body.hide{cursor:none}
 /* шапка как на других экранах форума */
-.hd{position:absolute;top:5vh;left:0;right:0;display:flex;flex-direction:column;align-items:center;z-index:1}
-.hd .logo{height:5.5vh}
-.hd .ti{height:13vh;margin-top:3vh}
-.hd .li{height:2px;width:28vw;background:var(--gold);opacity:.55;margin-top:3vh}
+.hd{position:absolute;top:3vh;left:0;right:0;display:flex;flex-direction:column;align-items:center;z-index:1}
+.hd .logo{height:4vh}
+.hd .ti{height:8.5vh;margin-top:1.6vh}
+.hd .li{height:2px;width:22vw;background:var(--gold);opacity:.55;margin-top:1.6vh}
 /* цифры */
-.mid{position:absolute;left:0;right:0;top:33vh;bottom:12vh;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1}
-#cap{font-size:3.4vh;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;min-height:4vh;margin-bottom:1vh}
-#t{font-size:min(36vh,26vw);line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums;text-shadow:0 0 60px rgba(210,170,118,.18);transition:color .4s}
+.mid{position:absolute;left:0;right:0;top:18vh;bottom:15vh;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1}
+#cap{font-size:3.4vh;letter-spacing:.32em;color:var(--gold);text-transform:uppercase}
+#cap:empty{display:none}
+/* цифры — почти во весь экран; с часами (1:30:00) чуть мельче, чтобы влезло */
+#t{font-size:min(58vh,32vw);line-height:.9;letter-spacing:.02em;font-variant-numeric:tabular-nums;text-shadow:0 0 60px rgba(210,170,118,.18);transition:color .4s}
 #t .c{display:inline-block;width:.32em;text-align:center;transform:translateY(-.06em)}
 #t .d{display:inline-block;width:.6em;text-align:center}
 body.last #t{color:var(--gold)}
 body.done #t{color:var(--gold);animation:blink 1.2s ease-in-out infinite}
 @keyframes blink{50%{opacity:.25}}
 body.paused:not(.idle) #t .c{animation:blink 1.2s ease-in-out infinite}
-#end{font-size:4.2vh;letter-spacing:.12em;margin-top:2vh;min-height:5vh;opacity:0;transition:opacity .5s}
+#t.hh{font-size:min(44vh,21vw)}
+#end{font-size:4.2vh;letter-spacing:.12em;margin-top:1vh;opacity:0;transition:opacity .5s}
 body.done #end{opacity:1}
 #end .m{color:var(--muted)}
-/* полоска прогресса внизу */
-.bar{position:absolute;left:8vw;right:8vw;bottom:8vh;height:.7vh;background:rgba(210,170,118,.16);border-radius:1vh;overflow:hidden;z-index:1}
-#bf{height:100%;width:100%;background:var(--gold);border-radius:1vh;transform-origin:left;box-shadow:0 0 20px rgba(210,170,118,.6)}
-#tail{position:fixed;right:-1vw;bottom:0;height:34vh;aspect-ratio:907/834;object-fit:cover;pointer-events:none;opacity:.85;
+#tail{position:fixed;right:-1vw;bottom:0;height:22vh;aspect-ratio:907/834;object-fit:cover;pointer-events:none;opacity:.85;
  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 80%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 22%);-webkit-mask-composite:source-in;
  mask-image:linear-gradient(to right,transparent 0,#000 5%,#000 80%,transparent 100%),linear-gradient(to bottom,transparent 0,#000 22%);mask-composite:intersect}
 /* пульт: появляется при движении мыши, прячется через 3 с */
@@ -59,7 +59,6 @@ body.hide .pan{opacity:0;pointer-events:none}
  <div id="t">10:00</div>
  <div id="end">Уақыт бітті <span class="m">·</span> Время вышло <span class="m">·</span> Time's up</div>
 </div>
-<div class="bar"><div id="bf"></div></div>
 <video id="tail" src="q/tail-big.mp4" poster="q/tail-poster.jpg" autoplay muted loop playsinline></video>
 
 <div class="pan" id="pan">
@@ -90,8 +89,7 @@ function fmt(ms){var s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%36
   return (h?dd(h).replace(/^<span class="d">0<\/span>/,"")+'<span class="c">:</span>':"")+dd(m)+'<span class="c">:</span>'+dd(x)}
 function draw(){
   var ms=running?Math.max(0,endAt-Date.now()):left;
-  $("t").innerHTML=fmt(ms);
-  $("bf").style.transform="scaleX("+(total?ms/total:0)+")";
+  $("t").innerHTML=fmt(ms);$("t").classList.toggle("hh",ms>=3600000);
   B.classList.toggle("last",ms>0&&ms<=60000);
   B.classList.toggle("done",ms<=0);
   if(running&&ms<=0){running=false;left=0;B.classList.add("paused");$("go").textContent="Старт";if(!rang){rang=true;chime()}}
